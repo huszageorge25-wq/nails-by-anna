@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nails by Anna Programări</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: calendar and time slots side by side on the left, sticky selection + address column on the right; one-column on phones.
+   Placeholder palette only (orchid mist, aubergine ink, mulberry accent). The brand logo colours are NOT used yet. */
+:root{
+  --bg:#F6F1F5;
+  --surface:#FFFFFF;
+  --ink:#2A1A2B;
+  --muted:#7B6679;
+  --line:#E9DDE6;
+  --accent:#8C3B67;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#F3E4EE;
+  --gold:#B48A5C;
+  --ok:#2E7D5B;
+  --busy:#D6CBD3;
+  --danger:#B3261E;
+  --shadow:0 1px 2px rgba(42,26,43,.05),0 12px 32px -12px rgba(90,40,80,.18);
+  --display:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#1A1119;--surface:#251924;--ink:#F5EAF1;--muted:#B9A5B3;--line:#3B2A38;
+    --accent:#E08BBA;--accent-ink:#2A1426;--accent-soft:#3A2335;--gold:#D2A878;--ok:#6CC59A;--busy:#4A3A47;--danger:#FF8A80;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px -12px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1A1119;--surface:#251924;--ink:#F5EAF1;--muted:#B9A5B3;--line:#3B2A38;
+  --accent:#E08BBA;--accent-ink:#2A1426;--accent-soft:#3A2335;--gold:#D2A878;--ok:#6CC59A;--busy:#4A3A47;--danger:#FF8A80;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px -12px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{margin:0;font-family:var(--display);font-weight:600;text-wrap:balance;letter-spacing:.005em}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+/* header */
+.top{padding:22px 0 8px}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;line-height:1}
+.brand b{font-family:var(--display);font-size:30px;font-weight:600;letter-spacing:.01em}
+.brand span{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-top:6px;font-weight:600}
+.addr-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1px solid var(--line);background:var(--surface);border-radius:999px;color:var(--ink);text-decoration:none;font-size:14px;font-weight:500;max-width:100%}
+.addr-chip svg{flex:none;color:var(--accent)}
+.addr-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.addr-chip:hover{border-color:var(--accent)}
+
+.hero{padding:20px 0 20px}
+.hero h1{font-size:clamp(36px,6vw,56px);line-height:1.04;max-width:16ch}
+.hero h1 em{font-style:italic;color:var(--accent)}
+.hero p{margin:14px 0 0;color:var(--muted);max-width:52ch}
+.steps{display:flex;gap:10px 14px;margin-top:20px;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--muted)}
+.step i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;border:1px solid var(--line);background:var(--surface)}
+.step.on{color:var(--ink)}
+.step.on i{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.step.done i{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.step+.step::before{content:"";width:22px;height:1px;background:var(--line)}
+
+/* layout */
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start;padding-bottom:110px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow)}
+.pick{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:0}
+.pane{padding:26px}
+.pane+.pane{border-left:1px solid var(--line)}
+.label{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:6px}
+.pane h2{font-size:28px;line-height:1.1;margin-bottom:18px}
+
+/* quick pick */
+.quick{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;margin-bottom:18px;border-radius:14px;background:var(--accent-soft);font-size:14px}
+.quick b{font-weight:700}
+.quick button{border:0;background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:7px 14px;font-weight:600;font-size:13px;white-space:nowrap}
+
+/* calendar */
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-head h3{font-size:24px;text-transform:capitalize}
+.nav{display:flex;gap:6px}
+.nav button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center}
+.nav button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.nav button:disabled{opacity:.35;cursor:not-allowed}
+.dow,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow span{text-align:center;font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--muted);padding:6px 0}
+.day{position:relative;aspect-ratio:1/1;border-radius:14px;border:1px solid transparent;background:transparent;display:grid;place-items:center;font-weight:600;font-size:15px;font-variant-numeric:tabular-nums;padding:0}
+.day.blank{pointer-events:none}
+.day.free{background:var(--accent-soft)}
+.day.free:hover{border-color:var(--accent)}
+.day.sel{background:var(--accent);color:var(--accent-ink)}
+.day.today:not(.sel){border-color:var(--gold)}
+.day.off{color:var(--muted);opacity:.45;cursor:not-allowed;background:repeating-linear-gradient(135deg,transparent 0 5px,var(--line) 5px 6px)}
+.day.off.past{background:none;opacity:.35}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{width:14px;height:14px;border-radius:5px;display:inline-block}
+.lg-free{background:var(--accent-soft);border:1px solid var(--accent)}
+.lg-busy{background:repeating-linear-gradient(135deg,var(--surface) 0 3px,var(--busy) 3px 4px);border:1px solid var(--busy)}
+.lg-sel{background:var(--accent)}
+
+/* slots */
+.slots{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.slot{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 10px;font-weight:600;font-size:16px;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;align-items:center;gap:2px;transition:border-color .15s,background .15s}
+.slot small{font-size:11px;font-weight:500;color:var(--muted);letter-spacing:.02em}
+.slot:hover:not(:disabled){border-color:var(--accent)}
+.slot.sel{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.slot.sel small{color:var(--accent-ink);opacity:.85}
+.slot:disabled{cursor:not-allowed;color:var(--muted);background:repeating-linear-gradient(135deg,transparent 0 5px,var(--line) 5px 6px);opacity:.75}
+.slot:disabled span{text-decoration:line-through;text-decoration-thickness:1px}
+.empty{border:1px dashed var(--line);border-radius:16px;padding:28px 18px;text-align:center;color:var(--muted);font-size:14px}
+.empty b{display:block;font-family:var(--display);font-size:22px;color:var(--ink);font-weight:600;margin-bottom:4px}
+
+/* form */
+.form{padding:26px;margin-top:24px}
+.form h2{font-size:28px;margin-bottom:4px}
+.form>p{margin:0 0 18px;color:var(--muted);font-size:14px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.field input{width:100%;padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:var(--bg);font-size:16px}
+.field input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.field.bad input{border-color:var(--danger)}
+.err{color:var(--danger);font-size:12.5px;margin-top:5px;min-height:0}
+.cta{margin-top:20px;width:100%;border:0;border-radius:16px;background:var(--accent);color:var(--accent-ink);padding:17px 20px;font-weight:700;font-size:16px;letter-spacing:.02em;box-shadow:0 10px 24px -10px var(--accent);transition:transform .15s,opacity .15s}
+.cta:hover:not(:disabled){transform:translateY(-1px)}
+.cta:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.fine{font-size:12.5px;color:var(--muted);margin-top:12px;text-align:center}
+.banner{margin-top:14px;padding:12px 14px;border-radius:12px;font-size:13.5px;background:var(--accent-soft)}
+.banner.warn{background:transparent;border:1px solid var(--danger);color:var(--danger)}
+
+/* aside */
+.aside{position:sticky;top:16px;display:flex;flex-direction:column;gap:18px}
+.sum{padding:24px}
+.sum h3{font-size:24px;margin-bottom:14px}
+.sum dl{margin:0;display:grid;gap:12px}
+.sum dt{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.sum dd{margin:2px 0 0;font-size:17px;font-weight:600}
+.sum dd.ph{color:var(--muted);font-weight:500;font-size:15px}
+.addr{padding:24px}
+.addr h3{font-size:24px;margin-bottom:10px}
+.addr p{margin:0 0 14px;font-size:15px}
+.addr .note{font-size:12px;color:var(--muted);margin:-6px 0 12px}
+.btn2{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:999px;padding:10px 18px;font-weight:600;font-size:14px;text-decoration:none}
+.btn2:hover{background:var(--accent);color:var(--accent-ink)}
+
+/* success */
+.done{padding:44px 28px;text-align:center}
+.done .ring{width:64px;height:64px;border-radius:50%;margin:0 auto 18px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.done h2{font-size:clamp(32px,5vw,44px);line-height:1.05}
+.done .when{margin:18px auto 6px;font-family:var(--display);font-size:30px;font-weight:600;color:var(--accent)}
+.done .who{color:var(--muted);margin:0 0 22px}
+.msg{max-width:440px;margin:0 auto 22px;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:18px;padding:16px 18px;font-size:14.5px}
+.msg small{display:block;color:var(--muted);font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;margin-bottom:6px}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn1{border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);padding:12px 22px;font-weight:700}
+
+/* owner */
+.owner{padding:26px}
+.owner h2{font-size:30px;margin-bottom:6px}
+.owner .sub{color:var(--muted);font-size:14px;margin:0 0 20px}
+.ogrid{display:grid;grid-template-columns:1.1fr .9fr;gap:24px}
+.olist{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.olist li{border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.olist b{display:block}
+.olist small{color:var(--muted)}
+.mini{border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:600}
+.mini.danger{border-color:var(--danger);color:var(--danger)}
+.ofield{margin-bottom:14px}
+.ofield>label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.ofield input,.ofield select{width:100%;padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:var(--bg)}
+.dchips{display:flex;gap:6px;flex-wrap:wrap}
+.dchips label{display:inline-flex;align-items:center;justify-content:center;min-width:42px;padding:8px 10px;border-radius:999px;border:1px solid var(--line);font-size:13px;font-weight:600;cursor:pointer}
+.dchips input{position:absolute;opacity:0;pointer-events:none}
+.dchips input:checked+span{color:var(--accent)}
+.dchips label:has(input:checked){background:var(--accent-soft);border-color:var(--accent)}
+.dchips label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.blocked{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.blocked span{background:var(--accent-soft);border-radius:999px;padding:4px 6px 4px 12px;font-size:13px;display:inline-flex;gap:6px;align-items:center}
+.blocked button{border:0;background:transparent;font-size:15px;line-height:1;padding:2px 6px}
+.loginbox{max-width:360px}
+.foot{padding:10px 0 40px;text-align:center;font-size:13px;color:var(--muted)}
+.foot button{border:0;background:none;color:var(--muted);text-decoration:underline;font-size:13px}
+
+/* assistant */
+.fab{position:fixed;right:20px;bottom:20px;z-index:20;display:flex;align-items:center;gap:10px;border:0;border-radius:999px;background:var(--ink);color:var(--bg);padding:14px 20px;font-weight:700;box-shadow:0 16px 36px -12px rgba(0,0,0,.5)}
+.fab svg{color:var(--gold)}
+.chat{position:fixed;right:20px;bottom:20px;z-index:30;width:min(400px,calc(100vw - 24px));height:min(640px,calc(100% - 40px));background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:0 30px 70px -20px rgba(40,10,40,.55);display:none;flex-direction:column;overflow:hidden}
+.chat.open{display:flex}
+.chat-h{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}
+.chat-h b{font-family:var(--display);font-size:22px;font-weight:600;display:block;line-height:1.1}
+.chat-h small{color:var(--muted);font-size:12px}
+.chat-h button{border:0;background:var(--accent-soft);width:34px;height:34px;border-radius:50%}
+.chat-log{flex:1;overflow-y:auto;padding:16px 16px 6px;display:flex;flex-direction:column;gap:10px}
+.b{max-width:86%;padding:11px 14px;border-radius:18px;font-size:14.5px;white-space:pre-wrap;overflow-wrap:anywhere}
+.b.bot{background:var(--bg);border:1px solid var(--line);border-bottom-left-radius:6px;align-self:flex-start}
+.b.me{background:var(--accent);color:var(--accent-ink);border-bottom-right-radius:6px;align-self:flex-end}
+.b.typing{color:var(--muted);font-style:italic}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:6px 16px}
+.chips button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:600}
+.chips button:hover{border-color:var(--accent);color:var(--accent)}
+.chat-f{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
+.chat-f input{flex:1;min-width:0;padding:12px 14px;border-radius:999px;border:1px solid var(--line);background:var(--bg)}
+.chat-f input:focus{outline:none;border-color:var(--accent)}
+.chat-f button{border:0;background:var(--accent);color:var(--accent-ink);width:44px;height:44px;border-radius:50%;display:grid;place-items:center}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-size:14px;z-index:40;max-width:calc(100vw - 32px)}
+.skel{opacity:.6}
+
+
+/* services */
+.svc{padding:26px;margin-bottom:24px}
+.svc h2{font-size:28px;margin-bottom:4px}
+.svc>p{margin:0 0 18px;color:var(--muted);font-size:14px}
+.sub-l{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--muted);margin:22px 0 10px}
+.cats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.opt{position:relative;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:18px;padding:16px 44px 14px 16px;display:flex;flex-direction:column;gap:4px;transition:border-color .15s,background .15s,box-shadow .15s;min-height:104px}
+.opt:hover{border-color:var(--accent)}
+.opt b{font-family:var(--display);font-size:22px;font-weight:600;line-height:1.1}
+.opt .pr{font-weight:700;font-size:15px;color:var(--accent);font-variant-numeric:tabular-nums}
+.opt small{font-size:12px;color:var(--muted)}
+.opt .tick{position:absolute;top:12px;right:12px;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;color:transparent}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 8px 22px -14px var(--accent)}
+.opt.sel .tick{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.opt .tick svg{color:inherit}
+.shapes{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.shapes .opt{flex-direction:row;align-items:center;gap:16px;min-height:0;padding:14px 16px}
+.shapes .opt>svg{flex:none;color:var(--accent)}
+.exts{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.exts .opt{min-height:0}
+.exts .opt p{margin:4px 0 0;font-size:13px;color:var(--muted)}
+.why{margin-top:12px;padding:14px 16px;border-radius:14px;background:var(--bg);border:1px solid var(--line);font-size:13.5px}
+.why b{font-weight:700}
+.total{margin-top:20px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px;border-radius:16px;background:var(--ink);color:var(--bg)}
+.total span{font-size:13px;opacity:.8}
+.total strong{font-family:var(--display);font-size:30px;font-weight:600;font-variant-numeric:tabular-nums}
+.total strong.pend{font-size:17px;font-family:var(--body);font-weight:600;opacity:.9}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg label{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:14px;border:1.5px solid var(--line);font-weight:600;cursor:pointer;background:var(--bg)}
+.seg label,.dchips label{position:relative}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.seg label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.tag{display:inline-block;margin-bottom:8px;padding:4px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700;letter-spacing:.04em}
+.kv{display:grid;gap:2px}
+.field.full{grid-column:1/-1}
+@media (max-width:900px){.cats{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:520px){.shapes,.exts{grid-template-columns:1fr}.svc{padding:20px}}
+@media (max-width:900px){
+  .grid{grid-template-columns:1fr}
+  .aside{position:static}
+  .ogrid{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  .pick{grid-template-columns:1fr}
+  .pane+.pane{border-left:0;border-top:1px solid var(--line)}
+  .pane,.form,.owner{padding:20px}
+  .fields,.two{grid-template-columns:1fr}
+  .slots{grid-template-columns:repeat(3,1fr)}
+  .fab span{display:none}
+  .fab{padding:14px}
+}
+@media (max-width:560px){.step+.step::before{display:none}.steps{gap:8px 16px}.hero{padding:18px 0 14px}}
+@media (max-width:420px){.slots{grid-template-columns:repeat(2,1fr)}.wrap{padding:0 16px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><b>Nails by Anna</b><span>Programări</span></div>
+    <a class="addr-chip" id="chipAddr" href="#" target="_blank" rel="noopener" aria-label="Deschide adresa în Google Maps">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+      <span id="chipAddrText"></span>
+    </a>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <section class="hero" id="hero">
+    <h1>Rezervă-ți <em>manichiura</em></h1>
+    <p>Alege tipul de unghii, forma și ora care ți se potrivește. Vezi în timp real ce intervale sunt libere.</p>
+    <div class="steps" id="steps"></div>
+  </section>
+
+  <div id="view"></div>
+
+  <div class="foot"><button type="button" id="ownerLink">Zona salonului</button></div>
+</main>
+
+<button class="fab" id="fab" type="button" aria-label="Deschide asistentul">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>
+  <span>Întreabă asistentul</span>
+</button>
+
+<aside class="chat" id="chat" aria-label="Asistent Nails by Anna">
+  <div class="chat-h">
+    <div><b>Asistent Nails by Anna</b><small>Programări și stiluri de unghii</small></div>
+    <button type="button" id="chatClose" aria-label="Închide">✕</button>
+  </div>
+  <div class="chat-log" id="chatLog" aria-live="polite"></div>
+  <div class="chips" id="chips"></div>
+  <form class="chat-f" id="chatForm">
+    <input id="chatInput" type="text" placeholder="Scrie o întrebare…" autocomplete="off" aria-label="Întrebarea ta">
+    <button type="submit" aria-label="Trimite"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  </form>
+</aside>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- constants & helpers ---------- */
+const MONTHS=['ianuarie','februarie','martie','aprilie','mai','iunie','iulie','august','septembrie','octombrie','noiembrie','decembrie'];
+const DOW=['L','Ma','Mi','J','V','S','D'];
+const DAYS_LONG=['duminică','luni','marți','miercuri','joi','vineri','sâmbătă'];
+const pad=n=>String(n).padStart(2,'0');
+const keyOf=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const fromKey=k=>{const p=k.split('-').map(Number);return new Date(p[0],p[1]-1,p[2]);};
+const toMin=t=>{const p=t.split(':').map(Number);return p[0]*60+p[1];};
+const toTime=m=>pad(Math.floor(m/60))+':'+pad(m%60);
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const longDate=k=>{const d=fromKey(k);return cap(DAYS_LONG[d.getDay()])+', '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();};
+const shortDate=k=>{const d=fromKey(k);return DAYS_LONG[d.getDay()].slice(0,3)+' '+d.getDate()+' '+MONTHS[d.getMonth()].slice(0,3);};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=id=>document.getElementById(id);
+
+/* Settings the salon can change in "Zona salonului". Values here are demo defaults. */
+const DEFAULT_CFG={
+  address:'Strada Gării 5A, bloc F114, etaj 2, ap. 43',
+  mapsQuery:'Strada Gării 5A, Sighișoara, România',
+  addressTag:'Servicii la domiciliu',
+  addressIsDemo:false,
+  openDays:[1,2,3,4,5,6],   /* Date.getDay(): 0 = duminică */
+  open:'10:00',
+  close:'18:00',
+  duration:90,              /* minutes per appointment */
+  leadMinutes:60,           /* same-day bookings need this much notice */
+  maxDaysAhead:60,
+  blockedDates:[]
+};
+
+/* ---------- manicure services (prices in lei) ---------- */
+const CATS=[
+  {id:'semi',name:'Unghii semi',price:75,label:'75 lei',note:'Preț standard'},
+  {id:'scurte',name:'Unghii scurte',price:80,label:'80 lei',note:''},
+  {id:'medii',name:'Unghii medii',price:100,label:'100 lei',note:''},
+  {id:'lungi',name:'Unghii lungi',price:null,label:'120–130 lei',note:'Prețul depinde de lungime'}
+];
+const SHAPES=[{id:'patrat',name:'Pătrat / Balerină'},{id:'migdala',name:'Migdală'}];
+const EXTS=[
+  {id:'120',price:120,name:'Lungă, dar nu până la capătul șablonului',desc:'Extensia se oprește înainte de capătul șablonului.'},
+  {id:'130',price:130,name:'Lungime până la capătul șablonului',desc:'Extensia folosește șablonul pe toată lungimea lui.'}
+];
+const catOf=id=>CATS.find(c=>c.id===id)||null;
+const shapeOf=id=>SHAPES.find(s=>s.id===id)||null;
+const extOf=id=>EXTS.find(x=>x.id===id)||null;
+/* single source of truth for the price; returns null while the selection is incomplete */
+function priceFor(cat,shape,ext){
+  const c=catOf(cat);if(!c||!shapeOf(shape))return null;
+  if(c.id==='lungi'){const x=extOf(ext);return x?x.price:null;}
+  return c.price;
+}
+const serviceLine=b=>b.catName+', '+b.shapeName+(b.extName?', '+b.extName.toLowerCase():'');
+let cfg=Object.assign({},DEFAULT_CFG);
+let slots=[];          /* occupied: {id,date,s,e} (no personal data) */
+let ready=false;
+
+const state={
+  view:'book',        /* book | done | owner */
+  today:new Date(),
+  ym:null,
+  selDate:null,
+  selTime:null,
+  cat:null,shape:null,ext:null,channel:null,
+  name:'',phone:'',
+  errs:{},
+  busy:false,
+  last:null,
+  ownerBookings:undefined, /* undefined loading, null locked, [] list */
+  confirmCancel:null
+};
+(function(){const t=state.today;state.ym={y:t.getFullYear(),m:t.getMonth()};})();
+
+/* ---------- availability logic ---------- */
+function timesFor(c){
+  const out=[];const o=toMin(c.open),cl=toMin(c.close),d=Number(c.duration)||60;
+  for(let s=o;s+d<=cl;s+=d)out.push({t:toTime(s),s:s,e:s+d});
+  return out;
+}
+function startOfToday(){const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate());}
+function lastBookableDate(){const d=startOfToday();d.setDate(d.getDate()+Number(cfg.maxDaysAhead||60));return d;}
+function dayIsOpen(k){
+  const d=fromKey(k);
+  if(d<startOfToday()||d>lastBookableDate())return false;
+  if(!cfg.openDays.includes(d.getDay()))return false;
+  if((cfg.blockedDates||[]).includes(k))return false;
+  return true;
+}
+function overlaps(k,s,e,list){
+  return (list||slots).some(x=>x.date===k&&s<x.e&&e>x.s);
+}
+function slotStatus(k,sl){
+  const now=new Date();
+  const d=fromKey(k);
+  if(d<startOfToday())return 'past';
+  if(k===keyOf(now)&&sl.s<now.getHours()*60+now.getMinutes()+Number(cfg.leadMinutes||0))return 'past';
+  if(!dayIsOpen(k))return 'closed';
+  if(overlaps(k,sl.s,sl.e))return 'busy';
+  return 'free';
+}
+function freeSlots(k){return timesFor(cfg).filter(sl=>slotStatus(k,sl)==='free');}
+function dayInfo(k){
+  const d=fromKey(k);
+  if(d<startOfToday())return{st:'past',n:0};
+  if(!dayIsOpen(k))return{st:'closed',n:0};
+  const n=freeSlots(k).length;
+  return{st:n?'free':'full',n:n};
+}
+function nextFree(limit){
+  const out=[];const d=startOfToday();
+  for(let i=0;i<=Number(cfg.maxDaysAhead||60)&&out.length<limit;i++){
+    const k=keyOf(d);
+    freeSlots(k).forEach(s=>{if(out.length<limit)out.push({date:k,time:s.t});});
+    d.setDate(d.getDate()+1);
+  }
+  return out;
+}
+const mapsUrl=()=> 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(cfg.mapsQuery||cfg.address||'');
+function notifText(b){
+  const first=(b.name||'').trim().split(/\s+/)[0]||'';
+  return 'Bună, '+first+'! Programarea ta la Nails by Anna este confirmată pentru azi, '+longDate(b.date).toLowerCase()+', la ora '+b.time+'. Adresa: '+cfg.address+'. Te așteptăm!';
+}
+
+/* ---------- storage layer (Supabase) ---------- */
+const SB_URL='https://xdiosexqmrozqeegkhgf.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaW9zZXhxbXJvenFlZWdraGdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ2NTc4NDUsImV4cCI6MjExMDIzMzg0NX0.FtoOq_AAdtawkFjt7KtwOe7yIXBaUDG1sExi1MYqGxY'; /* public anon key: safe in the browser, all access is limited by database rules */
+let authToken=null,authEmail=null;
+try{authToken=sessionStorage.getItem('nba_t');authEmail=sessionStorage.getItem('nba_e');}catch(e){}
+let loadError=false;
+async function sb(path,o){
+  o=o||{};
+  const hd={apikey:SB_KEY,Authorization:'Bearer '+((o.auth&&authToken)?authToken:SB_KEY),'Content-Type':'application/json'};
+  const r=await fetch(SB_URL+path,{method:o.method||'GET',headers:hd,body:o.body?JSON.stringify(o.body):undefined});
+  const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null;}catch(e){}
+  if(!r.ok){const er=new Error((j&&(j.message||j.msg||j.error_description||j.error))||('HTTP '+r.status));er.status=r.status;throw er;}
+  return j;
+}
+function cfgFromRow(r){
+  return {address:r.address,mapsQuery:r.maps_query,addressTag:r.address_tag,addressIsDemo:false,
+    openDays:r.open_days||[],open:toTime(r.open_min),close:toTime(r.close_min),duration:r.duration_min,
+    leadMinutes:r.lead_minutes,maxDaysAhead:r.max_days_ahead,blockedDates:r.blocked_dates||[]};
+}
+function cfgToRow(c){
+  return {address:c.address,maps_query:c.mapsQuery||null,address_tag:c.addressTag||null,open_days:c.openDays,
+    open_min:toMin(c.open),close_min:toMin(c.close),duration_min:Number(c.duration),blocked_dates:c.blockedDates||[]};
+}
+async function loadCfg(){
+  const rows=await sb('/rest/v1/settings?id=eq.1&select=*');
+  if(rows&&rows[0])cfg=Object.assign({},DEFAULT_CFG,cfgFromRow(rows[0]));
+}
+async function loadSlots(){
+  const from=keyOf(new Date());const to=new Date();to.setDate(to.getDate()+Number(cfg.maxDaysAhead||60)+1);
+  const rows=await sb('/rest/v1/rpc/get_busy_slots',{method:'POST',body:{p_from:from,p_to:keyOf(to)}});
+  slots=(rows||[]).map(x=>({id:x.date+'_'+x.start_min,date:x.date,s:x.start_min,e:x.end_min}));
+}
+async function refresh(){
+  try{await loadSlots();loadError=false;}catch(e){loadError=true;}
+  ready=true;
+  if(state.view==='book'&&$('cal'))partialUpdate();else if(state.view==='book')renderBook();
+}
+async function initStore(){
+  try{await loadCfg();}catch(e){loadError=true;}
+  await refresh();renderAll();
+}
+async function tryBook(b){
+  try{
+    await sb('/rest/v1/rpc/create_booking',{method:'POST',body:{p_date:b.date,p_start:b.s,p_name:b.name,p_phone:b.phone,p_channel:b.channel,p_category:b.cat,p_shape:b.shape,p_extension:b.ext}});
+    await refresh();
+    return{ok:true};
+  }catch(e){
+    await refresh();
+    const m=String(e.message||'');
+    if(m.indexOf('slot_taken')>=0||m.indexOf('no_overlap')>=0)return{ok:false,reason:'taken'};
+    if(m.indexOf('too_soon')>=0||m.indexOf('closed_day')>=0||m.indexOf('invalid_time')>=0||m.indexOf('invalid_date')>=0)return{ok:false,reason:'unavailable'};
+    return{ok:false,reason:'error'};
+  }
+}
+/* owner area: Supabase Auth (email + password); only addresses listed in the owners table can read bookings */
+async function ownerSignIn(email,pw){
+  const r=await sb('/auth/v1/token?grant_type=password',{method:'POST',body:{email:email,password:pw}});
+  authToken=r.access_token;authEmail=email;
+  try{sessionStorage.setItem('nba_t',authToken);sessionStorage.setItem('nba_e',email);}catch(e){}
+}
+async function ownerSignUp(email,pw){
+  return sb('/auth/v1/signup',{method:'POST',body:{email:email,password:pw}});
+}
+function ownerSignOut(){authToken=null;authEmail=null;try{sessionStorage.removeItem('nba_t');sessionStorage.removeItem('nba_e');}catch(e){}}
+async function loadBookings(){
+  if(!authToken)return 'login';
+  try{
+    const ok=await sb('/rest/v1/rpc/is_owner',{method:'POST',body:{},auth:true});
+    if(ok!==true)return 'denied';
+    const rows=await sb('/rest/v1/bookings?status=eq.confirmed&select=*&order=date.asc,start_min.asc',{auth:true});
+    return rows.map(x=>{
+      const c=catOf(x.category),s=shapeOf(x.shape),e=extOf(x.extension);
+      return {id:x.id,date:x.date,time:toTime(x.start_min),name:x.name,phone:x.phone,channel:x.channel,catName:c?c.name:x.category,shapeName:s?s.name:x.shape,extName:e?e.name:null,price:x.price};
+    });
+  }catch(e){
+    if(e.status===401||e.status===403){ownerSignOut();return 'login';}
+    return 'error';
+  }
+}
+async function cancelBooking(id){
+  try{await sb('/rest/v1/bookings?id=eq.'+encodeURIComponent(id),{method:'PATCH',auth:true,body:{status:'cancelled'}});await refresh();return true;}catch(e){return false;}
+}
+async function saveCfg(next){
+  try{
+    await sb('/rest/v1/settings?id=eq.1',{method:'PATCH',auth:true,body:cfgToRow(next)});
+    cfg=Object.assign({},DEFAULT_CFG,next);await refresh();return true;
+  }catch(e){return false;}
+}
+
+/* ---------- rendering ---------- */
+const ICON_CHECK='<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const ICON_L='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>';
+const ICON_R='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+const ICON_PIN='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
+
+function renderAll(){
+  $('chipAddr').href=mapsUrl();
+  $('chipAddrText').textContent=cfg.address||'';
+  renderSteps();
+  $('hero').style.display=state.view==='book'?'':'none';
+  if(state.view==='book')renderBook();
+  else if(state.view==='done')renderDone();
+  else renderOwner();
+}
+function svcComplete(){return priceFor(state.cat,state.shape,state.ext)!==null;}
+function renderSteps(){
+  const a=svcComplete()?'done':'on';
+  const b=svcComplete()?(state.selDate?'done':'on'):'';
+  const c=state.selDate?(state.selTime?'done':'on'):'';
+  const d=state.selTime?'on':'';
+  $('steps').innerHTML=
+    '<div class="step '+a+'"><i>1</i>Manichiura</div>'+
+    '<div class="step '+b+'"><i>2</i>Data</div>'+
+    '<div class="step '+c+'"><i>3</i>Ora</div>'+
+    '<div class="step '+d+'"><i>4</i>Datele tale</div>';
+}
+
+function calendarHTML(){
+  const {y,m}=state.ym;
+  const first=new Date(y,m,1);
+  const lead=(first.getDay()+6)%7;
+  const dim=new Date(y,m+1,0).getDate();
+  const t0=startOfToday();
+  const canPrev=!(y===t0.getFullYear()&&m===t0.getMonth());
+  const nextFirst=new Date(y,m+1,1);
+  const canNext=nextFirst<=lastBookableDate();
+  let cells='';
+  for(let i=0;i<lead;i++)cells+='<span class="day blank"></span>';
+  for(let d=1;d<=dim;d++){
+    const k=y+'-'+pad(m+1)+'-'+pad(d);
+    const info=dayInfo(k);
+    const cls=['day'];
+    if(info.st==='free')cls.push('free');
+    else{cls.push('off');if(info.st==='past')cls.push('past');}
+    if(k===keyOf(new Date()))cls.push('today');
+    if(k===state.selDate)cls.push('sel');
+    const label=longDate(k)+(info.st==='free'?', '+info.n+' ore libere':info.st==='full'?', complet ocupat':info.st==='closed'?', indisponibil':'');
+    cells+='<button type="button" class="'+cls.join(' ')+'" data-day="'+k+'" '+(info.st==='free'?'':'disabled')+' aria-label="'+esc(label)+'"'+(k===state.selDate?' aria-pressed="true"':'')+'>'+d+'</button>';
+  }
+  return '<div class="cal-head"><h3>'+MONTHS[m]+' '+y+'</h3><div class="nav">'+
+    '<button type="button" data-nav="-1" aria-label="Luna anterioară" '+(canPrev?'':'disabled')+'>'+ICON_L+'</button>'+
+    '<button type="button" data-nav="1" aria-label="Luna următoare" '+(canNext?'':'disabled')+'>'+ICON_R+'</button></div></div>'+
+    '<div class="dow">'+DOW.map(x=>'<span>'+x+'</span>').join('')+'</div>'+
+    '<div class="days">'+cells+'</div>'+
+    '<div class="legend"><span><i class="lg-free"></i>Disponibil</span><span><i class="lg-busy"></i>Ocupat / indisponibil</span><span><i class="lg-sel"></i>Ales</span></div>';
+}
+function slotsHTML(){
+  if(!state.selDate){
+    return '<div class="empty"><b>Alege o zi</b>Orele libere apar aici, iar cele ocupate sunt marcate clar.</div>';
+  }
+  const list=timesFor(cfg);
+  const free=list.filter(sl=>slotStatus(state.selDate,sl)==='free').length;
+  const btns=list.map(sl=>{
+    const st=slotStatus(state.selDate,sl);
+    const ok=st==='free';
+    const sel=ok&&state.selTime===sl.t;
+    return '<button type="button" class="slot'+(sel?' sel':'')+'" data-time="'+sl.t+'" '+(ok?'':'disabled')+' aria-label="'+sl.t+(ok?'':' ocupat')+'"'+(sel?' aria-pressed="true"':'')+'><span>'+sl.t+'</span><small>'+(ok?'până la '+toTime(sl.e):(st==='busy'?'Ocupat':'Indisponibil'))+'</small></button>';
+  }).join('');
+  return '<p style="margin:-8px 0 16px;color:var(--muted);font-size:14px">'+esc(longDate(state.selDate))+'<br>'+(free?free+(free===1?' oră liberă':' ore libere'):'nicio oră liberă')+'</p><div class="slots">'+btns+'</div>';
+}
+
+const ICON_TICK='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const SHAPE_ICON={
+  patrat:'<svg width="34" height="46" viewBox="0 0 34 46" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 43V6h20v37z"/></svg>',
+  migdala:'<svg width="34" height="46" viewBox="0 0 34 46" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 43V19C7 11 12 4 17 4s10 7 10 15v24z"/></svg>'
+};
+function optBtn(attr,id,sel,inner){
+  return '<button type="button" class="opt'+(sel?' sel':'')+'" '+attr+'="'+id+'" aria-pressed="'+(sel?'true':'false')+'">'+inner+'<span class="tick">'+ICON_TICK+'</span></button>';
+}
+function serviceHTML(){
+  const cats=CATS.map(c=>optBtn('data-cat',c.id,state.cat===c.id,'<b>'+c.name+'</b><span class="pr">'+c.label+'</span>'+(c.note?'<small>'+c.note+'</small>':''))).join('');
+  const shapes=SHAPES.map(s=>optBtn('data-shape',s.id,state.shape===s.id,SHAPE_ICON[s.id]+'<b>'+s.name+'</b>')).join('');
+  let ext='';
+  if(state.cat==='lungi'){
+    ext='<div class="sub-l">Cât de lungi? (alege una)</div><div class="exts" role="group" aria-label="Lungimea unghiilor lungi">'+
+      EXTS.map(x=>optBtn('data-ext',x.id,state.ext===x.id,'<b>'+x.name+'</b><span class="pr">'+x.price+' lei</span><p>'+x.desc+'</p>')).join('')+'</div>'+
+      '<div class="why"><b>De ce 120 sau 130 lei?</b> Prețul unghiilor lungi depinde de lungimea efectivă a extensiei. Dacă unghia este lungă, dar nu ajunge până la capătul șablonului, prețul este 120 lei. Dacă extensia merge până la capătul șablonului, prețul este 130 lei.</div>';
+  }
+  const p=priceFor(state.cat,state.shape,state.ext);
+  let totalInner;
+  if(p!==null)totalInner='<span>Preț final</span><strong>'+p+' lei</strong>';
+  else if(!state.cat)totalInner='<span>Preț final</span><strong class="pend">Alege tipul de unghii</strong>';
+  else if(!state.shape)totalInner='<span>Preț final</span><strong class="pend">Alege forma</strong>';
+  else totalInner='<span>Preț final</span><strong class="pend">Alege lungimea (120 sau 130 lei)</strong>';
+  return '<div class="label">Pasul 1</div><h2>Alege manichiura</h2><p>Tipul de unghii, forma și lungimea se pot combina liber. Prețul se calculează automat.</p>'+
+    '<div class="cats" role="group" aria-label="Tipul de unghii">'+cats+'</div>'+
+    '<div class="sub-l">Forma unghiilor</div><div class="shapes" role="group" aria-label="Forma unghiilor">'+shapes+'</div>'+
+    ext+'<div class="total" aria-live="polite">'+totalInner+'</div>';
+}
+function summaryHTML(){
+  const c=catOf(state.cat),s=shapeOf(state.shape),x=extOf(state.ext),p=priceFor(state.cat,state.shape,state.ext);
+  return '<div class="card sum"><h3>Programarea ta</h3><dl>'+
+    '<div><dt>Manichiură</dt><dd class="'+(c?'':'ph')+'">'+(c?esc(c.name)+(s?'<br>'+esc(s.name):'')+(x?'<br><span style="font-size:14px;font-weight:500;color:var(--muted)">'+esc(x.name)+'</span>':''):'Alege tipul de unghii')+'</dd></div>'+
+    '<div><dt>Preț</dt><dd class="'+(p!==null?'':'ph')+'">'+(p!==null?p+' lei':(state.cat==='lungi'&&!state.ext?'120–130 lei, în funcție de lungime':'Se calculează după alegere'))+'</dd></div>'+
+    '<div><dt>Data</dt><dd class="'+(state.selDate?'':'ph')+'">'+(state.selDate?esc(longDate(state.selDate)):'Alege o dată')+'</dd></div>'+
+    '<div><dt>Ora</dt><dd class="'+(state.selTime?'':'ph')+'">'+(state.selTime?state.selTime+' – '+toTime(toMin(state.selTime)+Number(cfg.duration)):'Alege o oră')+'</dd></div>'+
+    '</dl></div>'+addressCardHTML();
+}
+function addressCardHTML(){
+  return '<div class="card addr"><h3>Unde ne găsești</h3>'+(cfg.addressTag?'<span class="tag">'+esc(cfg.addressTag)+'</span>':'')+'<p>'+esc(cfg.address||'')+'</p>'+
+    '<a class="btn2" href="'+mapsUrl()+'" target="_blank" rel="noopener">'+ICON_PIN+' Deschide în Google Maps</a></div>';
+}
+function renderBook(){
+  const q=nextFree(1)[0];
+  const quick=(ready&&q&&!state.selDate)?'<div class="quick"><span>Cea mai apropiată oră liberă: <b>'+esc(shortDate(q.date))+', '+q.time+'</b></span><button type="button" data-quick="1">Alege</button></div>':'';
+  const status=ready?'':'<div class="banner skel">Se încarcă disponibilitatea…</div>';
+  const demo=loadError?'<div class="banner warn" role="alert">Nu am putut încărca disponibilitatea. Verifică conexiunea la internet și reîncarcă pagina.</div>':'';
+  $('view').innerHTML=
+   '<div class="grid"><div>'+
+     status+
+     '<div class="card svc" id="svc">'+serviceHTML()+'</div>'+
+     '<div class="card pick"><div class="pane"><div class="label">Pasul 2</div><h2>Alege data</h2>'+quick+'<div id="cal">'+calendarHTML()+'</div></div>'+
+     '<div class="pane"><div class="label">Pasul 3</div><h2>Alege ora</h2><div id="slots">'+slotsHTML()+'</div></div></div>'+
+     '<form class="card form" id="bookForm" novalidate><div class="label">Pasul 4</div><h2>Datele tale</h2><p>Doar numele și telefonul, ca să te putem anunța.</p>'+
+       '<div class="fields">'+
+         '<div class="field'+(state.errs.name?' bad':'')+'"><label for="fName">Nume complet</label><input id="fName" name="name" type="text" autocomplete="name" placeholder="Ex. Maria Popescu" value="'+esc(state.name)+'"><div class="err" id="eName">'+esc(state.errs.name||'')+'</div></div>'+
+         '<div class="field'+(state.errs.phone?' bad':'')+'"><label for="fPhone">Număr de telefon</label><input id="fPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ex. 0712 345 678" value="'+esc(state.phone)+'"><div class="err" id="ePhone">'+esc(state.errs.phone||'')+'</div></div>'+
+       '</div>'+
+       '<div class="field full" style="margin-top:14px"><label id="chLbl">Cum vrei să primești confirmarea?</label><div class="seg" role="radiogroup" aria-labelledby="chLbl">'+
+         '<label><input type="radio" name="ch" value="whatsapp" '+(state.channel==='whatsapp'?'checked':'')+'>WhatsApp</label>'+
+         '<label><input type="radio" name="ch" value="sms" '+(state.channel==='sms'?'checked':'')+'>SMS</label></div>'+
+         '<div class="err" id="eCh">'+esc(state.errs.channel||'')+'</div></div>'+
+       (state.errs.form?'<div class="banner warn" role="alert">'+esc(state.errs.form)+'</div>':'')+
+       '<button class="cta" id="submitBtn" type="submit" '+(canBook()?'':'disabled')+'>'+ctaLabel()+'</button>'+
+       '<div class="fine">În ziua programării primești un mesaj de confirmare cu data și ora.</div>'+
+     '</form>'+demo+
+   '</div><div class="aside" id="aside">'+summaryHTML()+'</div></div>';
+}
+function canBook(){return svcComplete()&&state.selDate&&state.selTime&&!state.busy;}
+function ctaLabel(){if(state.busy)return 'Se confirmă…';if(!svcComplete())return 'Alege mai întâi manichiura';if(!state.selDate)return 'Alege data';if(!state.selTime)return 'Alege ora';return 'Confirmă programarea';}
+function partialUpdate(){
+  renderSteps();
+  const c=$('cal'),s=$('slots'),a=$('aside'),b=$('submitBtn');
+  if(!c){renderBook();return;}
+  c.innerHTML=calendarHTML();s.innerHTML=slotsHTML();a.innerHTML=summaryHTML();
+  const sv=$('svc');if(sv)sv.innerHTML=serviceHTML();
+  b.disabled=!canBook();
+  b.textContent=ctaLabel();
+  const q=document.querySelector('.quick');if(q&&state.selDate)q.remove();
+}
+function renderDone(){
+  const b=state.last;
+  const via=b.channel==='sms'?'SMS':'WhatsApp';
+  $('view').innerHTML='<div class="grid"><div class="card done"><div class="ring">'+ICON_CHECK+'</div>'+
+    '<div class="label">Programare confirmată</div><h2>Ne vedem curând, '+esc((b.name||'').split(/\s+/)[0])+'</h2>'+
+    '<div class="when">'+esc(longDate(b.date))+', ora '+b.time+'</div>'+
+    '<p class="who">'+esc(b.catName)+', '+esc(b.shapeName)+(b.extName?'<br>'+esc(b.extName):'')+'<br><b style="color:var(--ink)">'+b.price+' lei</b></p>'+
+    '<div class="msg"><small>Mesajul de confirmare, prin '+via+', în ziua programării</small>'+esc(notifText(b))+'</div>'+
+    '<div class="row"><a class="btn2" href="'+mapsUrl()+'" target="_blank" rel="noopener">'+ICON_PIN+' Deschide adresa în Google Maps</a>'+
+    '<button class="btn1" type="button" id="again">Programare nouă</button></div></div>'+
+    '<div class="aside">'+addressCardHTML()+'</div></div>';
+}
+
+async function renderOwner(){
+  const b=state.ownerBookings;
+  const dayChips=[1,2,3,4,5,6,0].map((n,i)=>'<label><input type="checkbox" name="od" value="'+n+'" '+(cfg.openDays.includes(n)?'checked':'')+'><span>'+DOW[i]+'</span></label>').join('');
+  let list;
+  if(b===undefined)list='<div class="empty">Se încarcă…</div>';
+  else if(b==='login')list='<form id="loginForm" class="loginbox"><div class="ofield"><label for="lEmail">Email</label><input id="lEmail" type="email" autocomplete="email" required></div><div class="ofield"><label for="lPw">Parolă</label><input id="lPw" type="password" autocomplete="current-password" minlength="8" required></div><div class="row" style="justify-content:flex-start"><button class="btn1" type="submit">Intră</button><button class="mini" type="button" id="signUpBtn">Creează cont</button></div><div class="fine" id="loginMsg" style="text-align:left"></div></form>';
+  else if(b==='denied')list='<div class="empty"><b>Acest cont nu are acces</b>Contul '+esc(authEmail||'')+' nu este autorizat ca proprietar. <button class="mini" type="button" id="signOutBtn" style="margin-top:10px">Ieși</button></div>';
+  else if(b==='error')list='<div class="empty"><b>Eroare</b>Nu am putut încărca programările. Reîncearcă în câteva clipe.</div>';
+  else{
+    const up=b.filter(x=>x.date>=keyOf(new Date())).sort((x,y)=>(x.date+x.time).localeCompare(y.date+y.time));
+    list=up.length?'<ul class="olist">'+up.map(x=>'<li><div><b>'+esc(shortDate(x.date))+', '+x.time+'</b>'+esc(x.name)+'<br><small>'+esc(x.phone)+(x.channel?', '+(x.channel==='sms'?'SMS':'WhatsApp'):'')+'</small><br><small>'+esc(x.catName||'')+', '+esc(x.shapeName||'')+(x.extName?', '+esc(x.extName):'')+(x.price!=null?', '+x.price+' lei':'')+'</small></div><button type="button" class="mini danger" data-cancel="'+esc(x.id)+'">'+(state.confirmCancel===x.id?'Sigur?':'Anulează')+'</button></li>').join('')+'</ul>':'<div class="empty"><b>Nicio programare viitoare</b>Cele noi apar aici imediat.</div>';
+  }
+  $('view').innerHTML='<div class="card owner"><h2>Zona salonului</h2><p class="sub">Programări și program de lucru. Modificările pot fi salvate doar de proprietara paginii.</p>'+
+    '<div class="ogrid"><div><div class="label">Programări viitoare</div>'+list+'</div>'+
+    '<form id="cfgForm"><div class="label">Program și adresă</div>'+
+      '<div class="ofield"><label for="cAddr">Adresa salonului</label><input id="cAddr" value="'+esc(cfg.address)+'"></div>'+
+      '<div class="ofield"><label>Zile de lucru</label><div class="dchips">'+dayChips+'</div></div>'+
+      '<div class="two"><div class="ofield"><label for="cOpen">Prima programare</label><input id="cOpen" type="time" value="'+cfg.open+'"></div><div class="ofield"><label for="cClose">Program până la</label><input id="cClose" type="time" value="'+cfg.close+'"></div></div>'+
+      '<div class="ofield"><label for="cDur">Durata unei programări</label><select id="cDur">'+[45,60,75,90,105,120,150,180].map(v=>'<option value="'+v+'" '+(Number(cfg.duration)===v?'selected':'')+'>'+v+' minute</option>').join('')+'</select></div>'+
+      '<div class="ofield"><label for="cBlock">Zi liberă (blochează data)</label><input id="cBlock" type="date"><div class="blocked">'+(cfg.blockedDates||[]).map(k=>'<span>'+esc(shortDate(k))+'<button type="button" data-unblock="'+k+'" aria-label="Șterge">×</button></span>').join('')+'</div></div>'+
+      '<button class="cta" type="submit" style="margin-top:6px">Salvează</button><div class="fine" id="cfgMsg"></div>'+
+    '</form></div>'+
+    '<div class="row" style="margin-top:22px"><button class="btn2" type="button" id="backBook">← Înapoi la programări</button></div></div>';
+}
+
+/* ---------- events ---------- */
+function toast(t){
+  const el=document.createElement('div');el.className='toast';el.textContent=t;document.body.appendChild(el);
+  setTimeout(()=>el.remove(),3200);
+}
+document.addEventListener('click',async e=>{
+  const t=e.target.closest('button,a');if(!t)return;
+  if(t.dataset.cat){
+    state.cat=t.dataset.cat;if(state.cat!=='lungi')state.ext=null;state.errs.form='';partialUpdate();
+  }else if(t.dataset.shape){
+    state.shape=t.dataset.shape;partialUpdate();
+  }else if(t.dataset.ext){
+    state.ext=t.dataset.ext;partialUpdate();
+  }else if(t.dataset.day){
+    state.selDate=t.dataset.day;state.selTime=null;
+    const d=fromKey(state.selDate);state.ym={y:d.getFullYear(),m:d.getMonth()};
+    partialUpdate();
+    if(window.innerWidth<=720){const s=$('slots');if(s)s.scrollIntoView({behavior:'smooth',block:'start'});}
+  }else if(t.dataset.time){
+    state.selTime=t.dataset.time;partialUpdate();
+    if(window.innerWidth<=720){const f=$('bookForm');if(f)f.scrollIntoView({behavior:'smooth',block:'start'});}
+  }else if(t.dataset.nav){
+    let {y,m}=state.ym;m+=Number(t.dataset.nav);if(m<0){m=11;y--;}if(m>11){m=0;y++;}
+    state.ym={y:y,m:m};$('cal').innerHTML=calendarHTML();
+  }else if(t.dataset.quick){
+    const q=nextFree(1)[0];if(q){state.selDate=q.date;state.selTime=q.time;const d=fromKey(q.date);state.ym={y:d.getFullYear(),m:d.getMonth()};partialUpdate();}
+  }else if(t.id==='again'){
+    Object.assign(state,{view:'book',cat:null,shape:null,ext:null,channel:null,selDate:null,selTime:null,name:'',phone:'',errs:{},last:null});renderAll();window.scrollTo({top:0,behavior:'smooth'});
+  }else if(t.id==='ownerLink'){
+    state.view='owner';state.ownerBookings=undefined;renderAll();window.scrollTo({top:0});
+    state.ownerBookings=await loadBookings();if(state.view==='owner')renderOwner();
+  }else if(t.id==='signUpBtn'){
+    const em=$('lEmail').value.trim(),pw=$('lPw').value,msg=$('loginMsg');
+    if(!em||pw.length<8){msg.textContent='Scrie emailul și o parolă de minimum 8 caractere.';return;}
+    try{await ownerSignUp(em,pw);msg.textContent='Cont creat. Dacă primești un email de confirmare, apasă linkul din el, apoi intră.';}
+    catch(er){msg.textContent='Nu am putut crea contul: '+er.message;}
+  }else if(t.id==='signOutBtn'){
+    ownerSignOut();state.ownerBookings='login';renderOwner();
+  }else if(t.id==='backBook'){
+    state.view='book';renderAll();
+  }else if(t.dataset.cancel){
+    const id=t.dataset.cancel;
+    if(state.confirmCancel!==id){state.confirmCancel=id;renderOwner();return;}
+    state.confirmCancel=null;
+    const ok=await cancelBooking(id);
+    if(ok){state.ownerBookings=await loadBookings();renderOwner();toast('Programarea a fost anulată, intervalul este din nou liber.');}
+    else toast('Nu s-a putut anula. Verifică dacă ești conectată ca proprietară.');
+  }else if(t.dataset.unblock){
+    const next=Object.assign({},cfg,{blockedDates:(cfg.blockedDates||[]).filter(k=>k!==t.dataset.unblock)});
+    if(await saveCfg(next)){cfg=Object.assign({},DEFAULT_CFG,next);renderOwner();}else toast('Doar proprietara poate modifica programul.');
+  }
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='fName'){state.name=e.target.value;if(state.errs.name){state.errs.name='';e.target.parentNode.classList.remove('bad');$('eName').textContent='';}}
+  if(e.target.id==='fPhone'){state.phone=e.target.value;if(state.errs.phone){state.errs.phone='';e.target.parentNode.classList.remove('bad');$('ePhone').textContent='';}}
+});
+document.addEventListener('change',async e=>{
+  if(e.target.name==='ch'){state.channel=e.target.value;state.errs.channel='';const el=$('eCh');if(el)el.textContent='';}
+  if(e.target.id==='cBlock'&&e.target.value){
+    const next=Object.assign({},cfg,{blockedDates:Array.from(new Set((cfg.blockedDates||[]).concat(e.target.value))).sort()});
+    if(await saveCfg(next)){cfg=Object.assign({},DEFAULT_CFG,next);renderOwner();}else toast('Doar proprietara poate modifica programul.');
+  }
+});
+document.addEventListener('submit',async e=>{
+  if(e.target.id==='bookForm'){
+    e.preventDefault();
+    if(state.busy)return;
+    state.errs={};
+    const name=state.name.trim().replace(/\s+/g,' ');
+    const phone=state.phone.replace(/[\s().-]/g,'');
+    if(name.length<3||!/\S+\s+\S+/.test(name))state.errs.name='Scrie numele și prenumele.';
+    if(!/^(\+|00)?\d{9,15}$/.test(phone))state.errs.phone='Introdu un număr valid, de exemplu 0712 345 678.';
+    if(!state.channel)state.errs.channel='Alege SMS sau WhatsApp.';
+    if(!svcComplete())state.errs.form='Alege tipul de unghii, forma'+(state.cat==='lungi'?' și lungimea':'')+'.';
+    else if(!state.selDate||!state.selTime)state.errs.form='Alege mai întâi data și ora.';
+    if(Object.keys(state.errs).length){renderBook();return;}
+    const sl=timesFor(cfg).find(x=>x.t===state.selTime);
+    if(!sl||slotStatus(state.selDate,sl)!=='free'){state.errs.form='Intervalul ales nu mai este disponibil. Alege altă oră.';state.selTime=null;renderBook();return;}
+    state.busy=true;partialUpdate();
+    const cc=catOf(state.cat),ss=shapeOf(state.shape),xx=state.cat==='lungi'?extOf(state.ext):null;
+    const price=priceFor(state.cat,state.shape,state.ext);
+    if(price===null){state.busy=false;state.errs.form='Selecția nu este completă.';renderBook();return;}
+    const b={id:'',date:state.selDate,time:state.selTime,s:sl.s,e:sl.e,name:name,phone:state.phone.trim(),channel:state.channel,cat:cc.id,catName:cc.name,shape:ss.id,shapeName:ss.name,ext:xx?xx.id:null,extName:xx?xx.name:null,price:price};
+    const r=await tryBook(b);
+    state.busy=false;
+    if(r.ok){state.last=b;state.view='done';renderAll();window.scrollTo({top:0,behavior:'smooth'});}
+    else{
+      state.errs.form=(r.reason==='taken'||r.reason==='unavailable')?'Intervalul ales nu mai este disponibil. Alege altă oră, calendarul s-a actualizat.':'Nu am putut salva programarea. Încearcă din nou.';
+      state.selTime=null;renderBook();
+    }
+  }
+  if(e.target.id==='loginForm'){
+    e.preventDefault();
+    const msg=$('loginMsg');msg.textContent='Se verifică…';
+    try{await ownerSignIn($('lEmail').value.trim(),$('lPw').value);state.ownerBookings=await loadBookings();renderOwner();}
+    catch(er){msg.textContent='Email sau parolă greșită, sau contul nu este confirmat încă.';}
+    return;
+  }
+  if(e.target.id==='cfgForm'){
+    e.preventDefault();
+    const days=Array.from(document.querySelectorAll('input[name=od]:checked')).map(x=>Number(x.value));
+    const next=Object.assign({},cfg,{address:$('cAddr').value.trim()||cfg.address,addressIsDemo:false,openDays:days,open:$('cOpen').value||cfg.open,close:$('cClose').value||cfg.close,duration:Number($('cDur').value)});
+    if(toMin(next.close)-toMin(next.open)<next.duration){$('cfgMsg').textContent='Intervalul de lucru este mai scurt decât o programare.';return;}
+    const ok=await saveCfg(next);
+    if(ok)cfg=Object.assign({},DEFAULT_CFG,next);
+    $('cfgMsg').textContent=ok?'Salvat. Calendarul clienților este actualizat.':'Doar proprietara paginii poate salva modificările.';
+  }
+});
+
+/* ---------- assistant ---------- */
+const chat={open:false,msgs:[],sample:undefined,busy:false,fallback:false};
+const CHIPS=['Cum fac o programare?','Ce ore sunt libere?','Ce formă mi se potrivește?','Faceți unghii foarte lungi?'];
+function bubble(cls,text){
+  const b=document.createElement('div');b.className='b '+cls;b.textContent=text;$('chatLog').appendChild(b);$('chatLog').scrollTop=1e9;return b;
+}
+function openChat(){
+  chat.open=true;$('chat').classList.add('open');$('fab').style.display='none';
+  if(!$('chatLog').children.length){
+    bubble('bot','Bună! Sunt asistentul Nails by Anna. Te ajut cu programările și cu alegerea stilului de unghii care ți se potrivește.');
+    $('chips').innerHTML=CHIPS.map(c=>'<button type="button">'+esc(c)+'</button>').join('');
+  }
+  setTimeout(()=>$('chatInput').focus(),50);
+}
+function closeChat(){chat.open=false;$('chat').classList.remove('open');$('fab').style.display='';}
+$('fab').addEventListener('click',openChat);
+$('chatClose').addEventListener('click',closeChat);
+$('chips').addEventListener('click',e=>{const b=e.target.closest('button');if(b){$('chips').innerHTML='';ask(b.textContent);}});
+$('chatForm').addEventListener('submit',e=>{e.preventDefault();const v=$('chatInput').value.trim();if(v){$('chatInput').value='';$('chips').innerHTML='';ask(v);}});
+
+function systemText(){
+  const days=cfg.openDays.slice().sort().map(n=>DAYS_LONG[n]).join(', ');
+  return [
+'Ești asistentul virtual al salonului de unghii „Nails by Anna”. Răspunzi prietenos, scurt și clar, în limba în care scrie clientul (implicit română). Text simplu, fără tabele și fără markdown. Maximum 5-6 propoziții.',
+'Data de azi: '+longDate(keyOf(new Date()))+' ('+keyOf(new Date())+').',
+'PROGRAMARE: clientul alege o zi disponibilă în calendar, apoi o oră liberă, completează numele complet și numărul de telefon și apasă „Confirmă programarea”. Zilele și orele ocupate sunt gri și nu pot fi alese. În ziua programării clientul primește un mesaj de confirmare cu data și ora. Confirmarea se primește prin SMS sau WhatsApp, la alegerea clientului. Tu nu poți face programări în locul clientului, doar îl ghidezi spre pagină.',
+'SERVICII LA DOMICILIU: salonul afișează eticheta „Servicii la domiciliu”; nu explica detalii pe care nu le ai.\nPROGRAM: zile de lucru '+days+', între '+cfg.open+' și '+cfg.close+', o programare durează '+cfg.duration+' minute. Adresa: '+cfg.address+' (în pagină există buton de deschidere în Google Maps). Pentru disponibilitate reală folosește MEREU uneltele, nu ghici.',
+'SERVICII ȘI PREȚURI (manichiură, singurul serviciu): Unghii semi 75 lei (preț standard). Unghii scurte 80 lei. Unghii medii 100 lei. Unghii lungi 120 sau 130 lei. Fiecare categorie se poate combina liber cu una din două forme: Pătrat / Balerină sau Migdală. La unghii lungi prețul depinde de lungimea efectivă a extensiei: 120 lei dacă unghia este lungă, dar nu ajunge până la capătul șablonului; 130 lei dacă extensia merge până la capătul șablonului. Clienta alege categoria, forma și (la lungi) lungimea chiar în pagină, iar prețul final se calculează automat.',
+'LIMITE: Anna se specializează în modele simple. NU lucrează momentan cu modele foarte extreme sau complicate și nici cu unghii încărcate cu multe pietre, charms sau accesorii. Lungimea maximă oferită este „lungi, până la capătul șablonului”. Tehnicile de tip „slim” NU se oferă acum, dar pot fi introduse în viitor. Comunică aceste limite politicos și profesionist și propune alternativa potrivită din ce face Anna.',
+'NU inventa servicii, prețuri, promoții, durate pe servicii sau politici (anulări, avans, produse). Dacă nu ai informația, spune că nu o ai și că poate întreba direct salonul.'
+,
+'POTRIVIRE: poți explica general diferența dintre forma pătrată (aspect curat, clasic, rezistent) și migdală (alungește vizual degetul, aspect elegant) și poți întreba despre stilul de viață al clientului, dar doar în limitele serviciilor de mai sus. Nu da sfaturi medicale.'
+  ].join('\n');
+}
+const tools=[
+ {name:'availability',description:'Ore libere pentru o zi anume',inputSchema:{type:'object',properties:{date:{type:'string',description:'YYYY-MM-DD'}},required:['date']},
+  execute:function(i){const k=i.date;if(!/^\d{4}-\d{2}-\d{2}$/.test(k))return{error:'format invalid'};const inf=dayInfo(k);return{date:k,status:inf.st,free:freeSlots(k).map(s=>s.t)};}},
+ {name:'next_available',description:'Primele 6 intervale libere din calendar',inputSchema:{type:'object',properties:{}},
+  execute:function(){return nextFree(6).map(x=>x.date+' '+x.time);}}
+];
+function localAnswer(q){
+  const s=q.toLowerCase();
+  const has=r=>r.test(s);
+  if(has(/slim/))return 'Tehnicile de tip slim nu sunt oferite momentan, dar pot fi introduse în viitor. Acum oferim unghii semi, scurte, medii și lungi, în formă pătrat / balerină sau migdală.';
+  if(has(/lung/))return 'Avem unghii lungi la 120 sau 130 lei. Prețul depinde de lungimea extensiei: 120 lei dacă unghia este lungă, dar nu ajunge până la capătul șablonului, 130 lei dacă merge până la capătul șablonului. Poți alege formă pătrată / balerină sau migdală.';
+  if(has(/charm|pietre|strasuri|accesori|decor|complicat|extrem/))return 'Anna se concentrează pe modele simple și elegante. Nu realizăm momentan modele foarte complicate sau unghii încărcate cu multe pietre, charms sau accesorii.';
+  if(has(/form|pătrat|patrat|square|migdal|almond|potriv/))return 'Avem două forme: pătrată, cu aspect curat și clasic, și migdală, care alungește vizual degetul și arată elegant. Ambele se pot combina liber cu oricare dintre lungimile oferite. Dacă îmi spui ce ți-ai dori (ceva discret sau mai grafic), te ajut să alegi.';
+  if(has(/pre[tț]|cost|tarif|cât|cat costa|lei/))return 'Unghii semi 75 lei (preț standard), scurte 80 lei, medii 100 lei, lungi 120 sau 130 lei, în funcție de lungimea extensiei. Fiecare se poate face în formă pătrat / balerină sau migdală.';
+  if(has(/adres|unde|locați|locati|maps/))return 'Adresa salonului este '+cfg.address+'. Ai buton de Google Maps în pagină, sub calendar.';
+  if(has(/liber|disponib|când|cand|ore|oră|ora|azi|mâine|maine/)){
+    const n=nextFree(5);return n.length?'Cele mai apropiate intervale libere: '+n.map(x=>shortDate(x.date)+' la '+x.time).join(', ')+'. Le găsești în calendar.':'Momentan nu văd intervale libere în perioada afișată.';
+  }
+  if(has(/cum|rezerv|programa|pași|pasi/))return 'Este simplu: alegi o zi disponibilă din calendar, apoi o oră liberă, completezi numele complet și telefonul și confirmi. În ziua programării primești un mesaj cu data și ora.';
+  return 'Te pot ajuta cu programările, orele libere, adresa și alegerea formei și stilului de unghii. Ce ai vrea să afli?';
+}
+async function ask(text){
+  if(chat.busy)return;
+  bubble('me',text);
+  chat.msgs.push({role:'user',content:text});
+  chat.busy=true;
+  const out=bubble('bot typing','Se scrie…');
+  try{
+    if(chat.sample===undefined){try{chat.sample=(window.claude&&claude.use)?await claude.use('sample'):null;}catch(e){chat.sample=null;}}
+    if(!chat.sample||chat.fallback)throw {code:'none'};
+    const hist=chat.msgs.map((m,i)=>i===0?{role:'user',content:systemText()+'\n\n---\nMesajul clientului: '+m.content}:m);
+    let acc='';
+    const r=await chat.sample(hist,{tools:tools,cache:false,modelTier:'quick',onText:function(o){acc=o.text;out.className='b bot';out.textContent=acc;$('chatLog').scrollTop=1e9;}});
+    const final=(r&&r.text)||acc||localAnswer(text);
+    out.className='b bot';out.textContent=final;chat.msgs.push({role:'assistant',content:final});
+  }catch(err){
+    if(err&&(err.code==='not_granted'||err.code==='none'))chat.fallback=true;
+    const a=localAnswer(text);
+    out.className='b bot';out.textContent=a;chat.msgs.push({role:'assistant',content:a});
+  }
+  chat.busy=false;$('chatLog').scrollTop=1e9;
+}
+
+/* ---------- boot ---------- */
+renderAll();
+initStore();
+setInterval(()=>{ if(state.view==='book'&&!state.busy)refresh(); },20000);
+})();
+</script>
+</body>
+</html>
