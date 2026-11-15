@@ -456,6 +456,10 @@ html,body{overflow-x:clip}
 .banner.openb{border:1px solid var(--accent);background:var(--accent-soft);color:var(--ink);padding:16px 18px;border-radius:16px;margin-bottom:16px}
 .banner.openb b{color:var(--accent)}
 .olist s{opacity:.55}
+.tel{display:inline-block;margin:6px 0 2px;color:var(--accent);font-weight:700;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+.genmsg{margin-top:10px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:#0E0E0F}
+.genmsg p{margin:6px 0 10px;font-size:14px;line-height:1.5;color:var(--ink);user-select:all;-webkit-user-select:all}
+.olist li{align-items:flex-start}
 </style>
 </head>
 <body>
@@ -650,7 +654,7 @@ function nextFree(limit){
 const mapsUrl=()=> 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(cfg.mapsQuery||cfg.address||'');
 function notifText(b){
   const first=(b.name||'').trim().split(/\s+/)[0]||'';
-  return 'Bună, '+first+'! Programarea ta la Nails by Anna este confirmată pentru azi, '+longDate(b.date).toLowerCase()+', la ora '+b.time+'. Adresa: '+cfg.address+'. Te așteptăm!';
+  return 'Bună, '+first+'! Programarea ta la Nails by Anna este confirmată pentru '+(b.date===keyOf(new Date())?'azi, ':'')+longDate(b.date).toLowerCase()+', la ora '+b.time+'. Adresa: '+cfg.address+'. Te așteptăm!';
 }
 
 /* ---------- storage layer (Supabase) ---------- */
@@ -778,6 +782,11 @@ function waNumber(p){
   let d=String(p||'').replace(/[^\d+]/g,'');
   if(d.startsWith('+'))d=d.slice(1);else if(d.startsWith('00'))d=d.slice(2);else if(d.startsWith('0'))d='40'+d.slice(1);
   return d;
+}
+function chatLink(b){const n=waNumber(b.phone);return b.channel==='sms'?'sms:+'+n:'https://wa.me/'+n;}
+async function copyText(t){
+  try{await navigator.clipboard.writeText(t);return true;}catch(e){}
+  try{const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();const ok=document.execCommand('copy');a.remove();return ok;}catch(e){return false;}
 }
 function msgLink(b){
   const n=waNumber(b.phone),t=encodeURIComponent(notifText(b));
@@ -1029,10 +1038,10 @@ async function renderOwner(){
     const up=b.filter(x=>x.date>=keyOf(new Date())).sort((x,y)=>(x.date+x.time).localeCompare(y.date+y.time));
     const today=up.filter(x=>x.date===keyOf(new Date()));
     todayBox='<div class="tbox"><div class="label">Mesaje de azi'+(today.length?' ('+today.filter(x=>x.rem!=='sent').length+' de trimis)':'')+'</div>'+(today.length?'<ul class="olist">'+today.map(x=>'<li><div><b>'+x.time+'</b>'+esc(x.name)+'<br><small>'+(x.channel==='sms'?'SMS':'WhatsApp')+', '+esc(x.phone)+'</small></div>'+(x.rem==='sent'?'<span class="sentok">Trimis ✓</span>':'<button type="button" class="mini go" data-send="'+esc(x.id)+'">Trimite pe '+(x.channel==='sms'?'SMS':'WhatsApp')+'</button>')+'</li>').join('')+'</ul><div class="fine" style="text-align:left">Se deschide '+'aplicația ta cu mesajul deja scris. Apeși doar Trimite.</div>':'<div class="empty"><b>Nicio programare azi</b>Mesajele pentru programările de azi apar aici.</div>')+'</div>';
-    list=up.length?'<ul class="olist">'+up.map(x=>'<li><div><b>'+esc(shortDate(x.date))+', '+x.time+'</b><span class="cl">'+esc(x.name)+(x.loy?stampsHTML(x.loy,true):'')+'</span><small>'+esc(x.phone)+(x.channel?', '+(x.channel==='sms'?'SMS':'WhatsApp'):'')+'</small><br><small>'+esc(x.catName||'')+', '+esc(x.shapeName||'')+(x.extName?', '+esc(x.extName):'')+(x.price!=null?', '+(x.loy===5&&x.base?'<s>'+x.base+'</s> ':'')+x.price+' lei'+(x.loy===5?' · card −50%':''):'')+'</small></div><button type="button" class="mini danger" data-cancel="'+esc(x.id)+'">'+(state.confirmCancel===x.id?'Sigur?':'Anulează')+'</button></li>').join('')+'</ul>':'<div class="empty"><b>Nicio programare viitoare</b>Cele noi apar aici imediat.</div>';
+    list=up.length?'<ul class="olist">'+up.map(x=>'<li><div><b>'+esc(shortDate(x.date))+', '+x.time+'</b><span class="cl">'+esc(x.name)+(x.loy?stampsHTML(x.loy,true):'')+'</span><a class="tel" href="'+chatLink(x)+'" '+(x.channel==='sms'?'':'target="_blank" rel="noopener"')+'>'+esc(x.phone)+' · deschide '+(x.channel==='sms'?'SMS':'WhatsApp')+'</a><br><small>'+esc(x.catName||'')+', '+esc(x.shapeName||'')+(x.extName?', '+esc(x.extName):'')+(x.price!=null?', '+(x.loy===5&&x.base?'<s>'+x.base+'</s> ':'')+x.price+' lei'+(x.loy===5?' · card −50%':''):'')+'</small><div class="genmsg"><small>Mesaj de confirmare'+(x.rem==='sent'?' · <span class="sentok">Trimis ✓</span>':'')+'</small><p>'+esc(notifText(x))+'</p><div class="row" style="justify-content:flex-start;gap:8px"><button type="button" class="mini go" data-copy="'+esc(x.id)+'">Copiază mesajul</button>'+(x.rem==='sent'?'':'<button type="button" class="mini" data-sent="'+esc(x.id)+'">Marchează trimis</button>')+'</div></div></div><button type="button" class="mini danger" data-cancel="'+esc(x.id)+'">'+(state.confirmCancel===x.id?'Sigur?':'Anulează')+'</button></li>').join('')+'</ul>':'<div class="empty"><b>Nicio programare viitoare</b>Cele noi apar aici imediat.</div>';
   }
   $('view').innerHTML='<div class="card owner"><h2>Zona salonului</h2><p class="sub">Programări și program de lucru. Modificările pot fi salvate doar de proprietara paginii.</p>'+
-    '<div class="ogrid"><div>'+(Array.isArray(b)?'<div class="tbox pushb">'+(pushOn()?'<span class="sentok">Notificări active pe acest telefon ✓</span>':'<button type="button" class="btn1" id="pushBtn">Activează notificările pe acest telefon</button><div class="fine" style="text-align:left">Primești o notificare la fiecare programare nouă și cu o oră înainte de fiecare clientă.</div>')+'</div>':'')+todayBox+(state.pendingReviews&&state.pendingReviews.length?'<div class="tbox"><div class="label">Recenzii de aprobat</div>'+state.pendingReviews.map(r=>'<div class="rv"><b>'+esc(r.name)+'</b> '+stars(r.rating)+'<br><small>'+esc(r.body)+'</small><br><button type="button" class="mini go" data-approve="'+esc(r.id)+'" style="margin-top:8px">Publică</button></div>').join('')+'</div>':'')+'<div class="label">Programări viitoare'+(Array.isArray(b)?' ('+b.filter(x=>x.date>=keyOf(new Date())).length+')':'')+'</div>'+list+'</div>'+
+    '<div class="ogrid"><div>'+(todayBox='',Array.isArray(b)?'<div class="tbox pushb">'+(pushOn()?'<span class="sentok">Notificări active pe acest telefon ✓</span>':'<button type="button" class="btn1" id="pushBtn">Activează notificările pe acest telefon</button><div class="fine" style="text-align:left">Primești o notificare la fiecare programare nouă și cu o oră înainte de fiecare clientă.</div>')+'</div>':'')+todayBox+(state.pendingReviews&&state.pendingReviews.length?'<div class="tbox"><div class="label">Recenzii de aprobat</div>'+state.pendingReviews.map(r=>'<div class="rv"><b>'+esc(r.name)+'</b> '+stars(r.rating)+'<br><small>'+esc(r.body)+'</small><br><button type="button" class="mini go" data-approve="'+esc(r.id)+'" style="margin-top:8px">Publică</button></div>').join('')+'</div>':'')+'<div class="label">Programări viitoare'+(Array.isArray(b)?' ('+b.filter(x=>x.date>=keyOf(new Date())).length+')':'')+'</div>'+list+'</div>'+
     '<form id="cfgForm"><div class="label">Program și adresă</div>'+
       '<div class="ofield"><label for="cAddr">Adresa salonului</label><input id="cAddr" value="'+esc(cfg.address)+'"></div>'+
       '<div class="ofield"><label>Zile de lucru</label><div class="dchips">'+dayChips+'</div></div>'+
@@ -1107,6 +1116,12 @@ document.addEventListener('click',async e=>{
     const ok=await cancelBooking(id);
     if(ok){state.ownerBookings=await loadBookings();renderOwner();toast('Programarea a fost anulată, intervalul este din nou liber.');}
     else toast('Nu s-a putut anula. Verifică dacă ești conectată ca proprietară.');
+  }else if(t.dataset.copy){
+    const x=(state.ownerBookings||[]).find(r=>r.id===t.dataset.copy);
+    if(x)toast(await copyText(notifText(x))?'Mesaj copiat. Apasă pe numărul clientei și lipește-l.':'Nu am putut copia. Ține apăsat pe mesaj și copiază-l.');
+  }else if(t.dataset.sent){
+    const x=(state.ownerBookings||[]).find(r=>r.id===t.dataset.sent);
+    if(x&&await markSent(x.id)){x.rem='sent';renderOwner();}
   }else if(t.dataset.send){
     const x=(state.ownerBookings||[]).find(r=>r.id===t.dataset.send);
     if(x){
