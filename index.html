@@ -277,6 +277,40 @@ h1,h2,h3{margin:0;font-family:var(--display);font-weight:600;text-wrap:balance;l
 @media (max-width:420px){.slots{grid-template-columns:repeat(2,1fr)}.wrap{padding:0 16px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 .tbox{margin-bottom:22px}.sentok{color:var(--accent,#6b3a6b);font-weight:600;font-size:13px;white-space:nowrap}.mini.go{background:var(--accent,#6b3a6b);color:#fff;border-color:transparent}
+
+.motto{font-family:var(--display);font-style:italic;font-size:clamp(17px,2.4vw,22px);color:var(--accent);margin:0 0 10px}
+.mine{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;padding:18px 20px;margin-bottom:18px}
+.mine b{font-family:var(--display);font-size:20px;display:block}.mine small{color:var(--muted)}
+.mine .acts{display:flex;gap:8px;flex-wrap:wrap}
+#site section{margin:56px 0 0}
+#site h2.sec{font-size:clamp(28px,4vw,40px);margin:0 0 6px}
+#site .kick{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--accent);margin-bottom:8px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+@media(max-width:760px){.split{grid-template-columns:1fr}}
+.photo{aspect-ratio:4/5;border-radius:22px;border:1px dashed var(--line);background:linear-gradient(160deg,var(--accent-soft),var(--surface));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.split p{color:var(--muted);max-width:52ch}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px}
+.pcard{padding:22px;border-radius:20px}
+.pcard h3{font-size:22px;margin-bottom:8px}
+.pcard ul{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.pcard li{display:flex;gap:10px;align-items:center;font-size:15px}
+.pcard li svg{color:var(--accent);flex:none}
+.bigprice{font-family:var(--display);font-size:44px;font-weight:600;color:var(--accent);line-height:1}
+.vibes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:20px}
+.vibe{padding:20px 14px;border-radius:18px;text-align:center;font-size:14px;font-weight:600}
+.vibe svg{display:block;margin:0 auto 10px;color:var(--accent)}
+.rev{padding:18px 20px;border-radius:18px;margin-top:12px}
+.rev b{display:block}.rev .st{color:var(--accent);letter-spacing:2px}.rev p{margin:6px 0 0;color:var(--muted)}
+.rform{display:grid;gap:10px;margin-top:18px;max-width:520px}
+.rform input,.rform textarea,.rform select{font:inherit;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.bf{padding:28px;border-radius:24px;background:linear-gradient(135deg,var(--ink),var(--accent));color:#fff;margin-top:6px}
+.bf h3{font-size:30px;color:#fff}.bf p{margin:8px 0 0;opacity:.85;max-width:56ch}
+.stamps{display:flex;gap:10px;margin:16px 0;flex-wrap:wrap}
+.stamp{width:54px;height:54px;border-radius:50%;border:2px dashed var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:20px;color:var(--accent)}
+.stamp.last{background:var(--accent);color:#fff;border-style:solid;font-size:14px;font-weight:700}
+.socials{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.socials a{display:inline-flex;gap:8px;align-items:center;padding:10px 16px;border-radius:999px;border:1px solid var(--line);text-decoration:none;color:var(--ink);font-weight:600;background:var(--surface)}
+.rv{margin-top:12px;padding:14px 16px;border:1px solid var(--line);border-radius:14px}
 </style>
 </head>
 <body>
@@ -293,12 +327,15 @@ h1,h2,h3{margin:0;font-family:var(--display);font-weight:600;text-wrap:balance;l
 
 <main class="wrap" id="main">
   <section class="hero" id="hero">
+    <div class="motto">Elegance in every detail. Where beauty meets perfection!</div>
     <h1>Rezervă-ți <em>manichiura</em></h1>
     <p>Alege tipul de unghii, forma și ora care ți se potrivește. Vezi în timp real ce intervale sunt libere.</p>
     <div class="steps" id="steps"></div>
   </section>
 
+  <div id="mine"></div>
   <div id="view"></div>
+  <div id="site"></div>
 
   <div class="foot"><button type="button" id="ownerLink">Zona salonului</button></div>
 </main>
@@ -487,10 +524,16 @@ async function refresh(){
 async function initStore(){
   try{await loadCfg();}catch(e){loadError=true;}
   await refresh();renderAll();
+  reviewsCache=await loadReviews();renderSite();
 }
+function getMine(){try{const m=JSON.parse(localStorage.getItem('nba_my')||'null');return m&&m.date>=keyOf(new Date())?m:null;}catch(e){return null;}}
+function setMine(m){try{if(m)localStorage.setItem('nba_my',JSON.stringify(m));else localStorage.removeItem('nba_my');}catch(e){}}
+async function loadReviews(){try{return await sb('/rest/v1/reviews?approved=eq.true&select=name,rating,body,created_at&order=created_at.desc&limit=30');}catch(e){return [];}}
+async function loadPendingReviews(){if(!authToken)return [];try{return await sb('/rest/v1/reviews?approved=eq.false&select=*&order=created_at.asc',{auth:true});}catch(e){return [];}}
 async function tryBook(b){
   try{
-    await sb('/rest/v1/rpc/create_booking',{method:'POST',body:{p_date:b.date,p_start:b.s,p_name:b.name,p_phone:b.phone,p_channel:b.channel,p_category:b.cat,p_shape:b.shape,p_extension:b.ext}});
+    const r=await sb('/rest/v1/rpc/create_booking',{method:'POST',body:{p_date:b.date,p_start:b.s,p_name:b.name,p_phone:b.phone,p_channel:b.channel,p_category:b.cat,p_shape:b.shape,p_extension:b.ext}});
+    if(r&&r.id){b.id=r.id;b.token=r.token;}
     await refresh();
     return{ok:true};
   }catch(e){
@@ -559,9 +602,50 @@ function renderAll(){
   $('chipAddrText').textContent=cfg.address||'';
   renderSteps();
   $('hero').style.display=state.view==='book'?'':'none';
+  renderMine();renderSite();
   if(state.view==='book')renderBook();
   else if(state.view==='done')renderDone();
   else renderOwner();
+}
+function renderMine(){
+  const el=$('mine');const m=getMine();
+  if(!el)return;
+  if(state.view!=='book'||!m||state.resch){el.innerHTML='';return;}
+  el.innerHTML='<div class="card mine"><div><small>Programarea ta</small><b>'+esc(longDate(m.date))+', ora '+m.time+'</b><small>'+esc(m.catName)+', '+esc(m.shapeName)+(m.extName?', '+esc(m.extName):'')+', '+m.price+' lei</small></div>'+
+    '<div class="acts"><button class="btn2" type="button" id="reschBtn">Reprogramează</button><button class="mini danger" type="button" id="cancelMine">'+(state.confirmMine?'Sigur anulezi?':'Anulează programarea')+'</button></div></div>';
+}
+const IC={
+  ok:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  cam:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  cup:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 10h2a2.5 2.5 0 0 1 0 5h-2"/><path d="M9 3c-1 1.2 1 2 0 3.2M12.5 3c-1 1.2 1 2 0 3.2"/></svg>',
+  chat:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+  moon:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
+  tv:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
+  head:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>'
+};
+function stars(n){return '★★★★★'.slice(0,n)+'☆☆☆☆☆'.slice(0,5-n);}
+let reviewsCache=null;
+function renderSite(){
+  const el=$('site');if(!el)return;
+  if(state.view!=='book'){el.innerHTML='';return;}
+  const li=t=>'<li>'+IC.ok+t+'</li>';
+  const revs=(reviewsCache||[]).map(r=>'<div class="card rev"><span class="st" aria-label="'+r.rating+' din 5">'+stars(r.rating)+'</span><b>'+esc(r.name)+'</b><p>'+esc(r.body)+'</p></div>').join('')||'<p class="sub" style="color:var(--muted)">Fii prima cliență care lasă o recenzie.</p>';
+  el.innerHTML=
+  '<section class="split"><div class="photo">'+IC.cam+'Fotografia salonului</div><div><div class="kick">Nails by Anna</div><h2 class="sec">Un loc în care detaliile contează</h2><p>Un spațiu liniștit, creat ca manichiura să fie o oră doar a ta. Fiecare formă și fiecare finisaj sunt lucrate cu grijă, răbdare și atenție la ce îți dorești tu.</p>'+
+   '<div class="socials"><a href="#" aria-label="Instagram">Instagram <span style="color:var(--muted)">...</span></a><a href="#" aria-label="Facebook">Facebook <span style="color:var(--muted)">...</span></a></div></div></section>'+
+  '<section><div class="kick">Servicii</div><h2 class="sec">Construcție</h2><div class="pgrid">'+
+    '<div class="card pcard"><h3>Unghii semi</h3><div class="bigprice">75 lei</div><p style="color:var(--muted);margin:8px 0 0">Preț standard</p></div>'+
+    '<div class="card pcard"><h3>Materiale</h3><ul>'+li('Gel')+li('Builder gel')+li('Semi-gel polish')+li('Polygel')+'</ul></div>'+
+    '<div class="card pcard"><h3>Incluse în preț</h3><ul>'+li('Simplu')+li('French')+li('Baby Boomer')+li('Întreținere')+'</ul></div></div></section>'+
+  '<section class="pgrid" style="margin-top:56px"><div class="card pcard"><div class="kick">Anulare</div><h3>Anulezi direct din aplicație</h3><p style="color:var(--muted);margin:0">Programarea ta apare în partea de sus a paginii, cu opțiunea de anulare mereu la îndemână.</p></div>'+
+   '<div class="card pcard"><div class="kick">Reprogramare</div><h3>Altă zi sau altă oră</h3><p style="color:var(--muted);margin:0">Ți s-a schimbat programul? Apeși Reprogramează și alegi o altă zi sau oră liberă.</p></div></section>'+
+  '<section><div class="kick">Recenzii</div><h2 class="sec">Recenzii de la cliente</h2>'+revs+
+   '<form class="rform" id="revForm"><input id="rvName" placeholder="Numele tău" maxlength="60" required><select id="rvRating" aria-label="Notă"><option value="5">★★★★★</option><option value="4">★★★★☆</option><option value="3">★★★☆☆</option><option value="2">★★☆☆☆</option><option value="1">★☆☆☆☆</option></select><textarea id="rvBody" rows="3" placeholder="Cum a fost experiența ta?" maxlength="600" required></textarea><button class="btn1" type="submit">Trimite recenzia</button><div class="fine" id="rvMsg" style="text-align:left"></div></form></section>'+
+  '<section class="split"><div><div class="kick">Despre mine</div><h2 class="sec">Povestea mea</h2><p>Sunt la început de drum, dar cu multă ambiție, răbdare și dorința de a învăța în fiecare zi. Pun suflet în fiecare lucrare și vreau ca fiecare clientă să plece mulțumită.</p><h3 style="margin-top:22px;font-size:24px">Ce mă diferențiază</h3><p>Îți respect dorințele, de la formă până la ultimul detaliu.</p></div><div class="photo">'+IC.cam+'Fotografia mea</div></section>'+
+  '<section><div class="vibes"><div class="card vibe">'+IC.cup+'Cafea sau ceai</div><div class="card vibe">'+IC.chat+'Povești, dacă vrei</div><div class="card vibe">'+IC.moon+'Liniște, dacă ai nevoie</div><div class="card vibe">'+IC.tv+'Serialul tău preferat</div><div class="card vibe">'+IC.head+'Muzică în căști</div></div></section>'+
+  '<section><div class="kick">Marketing și promoții</div><h2 class="sec">Oferte pentru tine</h2>'+
+   '<div class="bf"><h3>Campania Black Friday</h3><p>Pregătim oferte speciale pentru Black Friday. Rămâi aproape, le anunțăm aici.</p></div>'+
+   '<div class="card pcard" style="margin-top:14px"><h3>Cardul de fidelitate</h3><p style="color:var(--muted);margin:0">La a cincea programare primești 50% reducere.</p><div class="stamps"><div class="stamp">1</div><div class="stamp">2</div><div class="stamp">3</div><div class="stamp">4</div><div class="stamp last">−50%</div></div></div></section>';
 }
 function svcComplete(){return priceFor(state.cat,state.shape,state.ext)!==null;}
 function renderSteps(){
@@ -629,6 +713,10 @@ function optBtn(attr,id,sel,inner){
   return '<button type="button" class="opt'+(sel?' sel':'')+'" '+attr+'="'+id+'" aria-pressed="'+(sel?'true':'false')+'">'+inner+'<span class="tick">'+ICON_TICK+'</span></button>';
 }
 function serviceHTML(){
+  if(state.resch){const m=state.resch;return '<div class="label">Reprogramare</div><h2>Alege o nouă dată</h2><p>'+esc(m.catName)+', '+esc(m.shapeName)+(m.extName?', '+esc(m.extName):'')+', '+m.price+' lei. Rămâne aceeași, schimbi doar data și ora.</p><div class="row" style="justify-content:flex-start"><button class="btn2" type="button" id="reschCancel">Renunț la reprogramare</button></div>';}
+  return serviceHTML0();
+}
+function serviceHTML0(){
   const cats=CATS.map(c=>optBtn('data-cat',c.id,state.cat===c.id,'<b>'+c.name+'</b><span class="pr">'+c.label+'</span>'+(c.note?'<small>'+c.note+'</small>':''))).join('');
   const shapes=SHAPES.map(s=>optBtn('data-shape',s.id,state.shape===s.id,SHAPE_ICON[s.id]+'<b>'+s.name+'</b>')).join('');
   let ext='';
@@ -672,15 +760,15 @@ function renderBook(){
      '<div class="card svc" id="svc">'+serviceHTML()+'</div>'+
      '<div class="card pick"><div class="pane"><div class="label">Pasul 2</div><h2>Alege data</h2>'+quick+'<div id="cal">'+calendarHTML()+'</div></div>'+
      '<div class="pane"><div class="label">Pasul 3</div><h2>Alege ora</h2><div id="slots">'+slotsHTML()+'</div></div></div>'+
-     '<form class="card form" id="bookForm" novalidate><div class="label">Pasul 4</div><h2>Datele tale</h2><p>Doar numele și telefonul, ca să te putem anunța.</p>'+
-       '<div class="fields">'+
+     '<form class="card form" id="bookForm" novalidate>'+(state.resch?'':'<div class="label">Pasul 4</div><h2>Datele tale</h2><p>Doar numele și telefonul, ca să te putem anunța.</p>')+
+       (state.resch?'<div style="display:none">':'')+'<div class="fields">'+
          '<div class="field'+(state.errs.name?' bad':'')+'"><label for="fName">Nume complet</label><input id="fName" name="name" type="text" autocomplete="name" placeholder="Ex. Maria Popescu" value="'+esc(state.name)+'"><div class="err" id="eName">'+esc(state.errs.name||'')+'</div></div>'+
          '<div class="field'+(state.errs.phone?' bad':'')+'"><label for="fPhone">Număr de telefon</label><input id="fPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ex. 0712 345 678" value="'+esc(state.phone)+'"><div class="err" id="ePhone">'+esc(state.errs.phone||'')+'</div></div>'+
        '</div>'+
        '<div class="field full" style="margin-top:14px"><label id="chLbl">Cum vrei să primești confirmarea?</label><div class="seg" role="radiogroup" aria-labelledby="chLbl">'+
          '<label><input type="radio" name="ch" value="whatsapp" '+(state.channel==='whatsapp'?'checked':'')+'>WhatsApp</label>'+
          '<label><input type="radio" name="ch" value="sms" '+(state.channel==='sms'?'checked':'')+'>SMS</label></div>'+
-         '<div class="err" id="eCh">'+esc(state.errs.channel||'')+'</div></div>'+
+         '<div class="err" id="eCh">'+esc(state.errs.channel||'')+'</div></div>'+(state.resch?'</div>':'')+
        (state.errs.form?'<div class="banner warn" role="alert">'+esc(state.errs.form)+'</div>':'')+
        '<button class="cta" id="submitBtn" type="submit" '+(canBook()?'':'disabled')+'>'+ctaLabel()+'</button>'+
        '<div class="fine">În ziua programării primești un mesaj de confirmare cu data și ora.</div>'+
@@ -688,7 +776,7 @@ function renderBook(){
    '</div><div class="aside" id="aside">'+summaryHTML()+'</div></div>';
 }
 function canBook(){return svcComplete()&&state.selDate&&state.selTime&&!state.busy;}
-function ctaLabel(){if(state.busy)return 'Se confirmă…';if(!svcComplete())return 'Alege mai întâi manichiura';if(!state.selDate)return 'Alege data';if(!state.selTime)return 'Alege ora';return 'Confirmă programarea';}
+function ctaLabel(){if(state.busy)return 'Se confirmă…';if(state.resch&&state.selDate&&state.selTime)return 'Mută programarea';if(!svcComplete())return 'Alege mai întâi manichiura';if(!state.selDate)return 'Alege data';if(!state.selTime)return 'Alege ora';return 'Confirmă programarea';}
 function partialUpdate(){
   renderSteps();
   const c=$('cal'),s=$('slots'),a=$('aside'),b=$('submitBtn');
@@ -727,7 +815,7 @@ async function renderOwner(){
     list=up.length?'<ul class="olist">'+up.map(x=>'<li><div><b>'+esc(shortDate(x.date))+', '+x.time+'</b>'+esc(x.name)+'<br><small>'+esc(x.phone)+(x.channel?', '+(x.channel==='sms'?'SMS':'WhatsApp'):'')+'</small><br><small>'+esc(x.catName||'')+', '+esc(x.shapeName||'')+(x.extName?', '+esc(x.extName):'')+(x.price!=null?', '+x.price+' lei':'')+'</small></div><button type="button" class="mini danger" data-cancel="'+esc(x.id)+'">'+(state.confirmCancel===x.id?'Sigur?':'Anulează')+'</button></li>').join('')+'</ul>':'<div class="empty"><b>Nicio programare viitoare</b>Cele noi apar aici imediat.</div>';
   }
   $('view').innerHTML='<div class="card owner"><h2>Zona salonului</h2><p class="sub">Programări și program de lucru. Modificările pot fi salvate doar de proprietara paginii.</p>'+
-    '<div class="ogrid"><div>'+todayBox+'<div class="label">Programări viitoare</div>'+list+'</div>'+
+    '<div class="ogrid"><div>'+todayBox+(state.pendingReviews&&state.pendingReviews.length?'<div class="tbox"><div class="label">Recenzii de aprobat</div>'+state.pendingReviews.map(r=>'<div class="rv"><b>'+esc(r.name)+'</b> '+stars(r.rating)+'<br><small>'+esc(r.body)+'</small><br><button type="button" class="mini go" data-approve="'+esc(r.id)+'" style="margin-top:8px">Publică</button></div>').join('')+'</div>':'')+'<div class="label">Programări viitoare</div>'+list+'</div>'+
     '<form id="cfgForm"><div class="label">Program și adresă</div>'+
       '<div class="ofield"><label for="cAddr">Adresa salonului</label><input id="cAddr" value="'+esc(cfg.address)+'"></div>'+
       '<div class="ofield"><label>Zile de lucru</label><div class="dchips">'+dayChips+'</div></div>'+
@@ -765,11 +853,25 @@ document.addEventListener('click',async e=>{
     state.ym={y:y,m:m};$('cal').innerHTML=calendarHTML();
   }else if(t.dataset.quick){
     const q=nextFree(1)[0];if(q){state.selDate=q.date;state.selTime=q.time;const d=fromKey(q.date);state.ym={y:d.getFullYear(),m:d.getMonth()};partialUpdate();}
+  }else if(t.id==='reschBtn'){
+    const m=getMine();if(!m)return;
+    Object.assign(state,{resch:m,view:'book',cat:m.cat,shape:m.shape,ext:m.ext,channel:m.channel,name:m.name,phone:m.phone,selDate:null,selTime:null,errs:{}});
+    renderAll();window.scrollTo({top:0,behavior:'smooth'});
+  }else if(t.id==='reschCancel'){
+    Object.assign(state,{resch:null,cat:null,shape:null,ext:null,channel:null,name:'',phone:'',selDate:null,selTime:null,errs:{}});renderAll();
+  }else if(t.id==='cancelMine'){
+    const m=getMine();if(!m)return;
+    if(!state.confirmMine){state.confirmMine=true;renderMine();return;}
+    state.confirmMine=false;
+    try{await sb('/rest/v1/rpc/cancel_my_booking',{method:'POST',body:{p_id:m.id,p_token:m.token}});setMine(null);await refresh();renderAll();toast('Programarea a fost anulată.');}
+    catch(er){setMine(null);renderAll();toast('Programarea nu mai este activă.');}
+  }else if(t.dataset.approve){
+    try{await sb('/rest/v1/reviews?id=eq.'+encodeURIComponent(t.dataset.approve),{method:'PATCH',auth:true,body:{approved:true}});state.pendingReviews=await loadPendingReviews();reviewsCache=await loadReviews();renderOwner();toast('Recenzia este publicată.');}catch(er){toast('Nu s-a putut publica.');}
   }else if(t.id==='again'){
-    Object.assign(state,{view:'book',cat:null,shape:null,ext:null,channel:null,selDate:null,selTime:null,name:'',phone:'',errs:{},last:null});renderAll();window.scrollTo({top:0,behavior:'smooth'});
+    Object.assign(state,{view:'book',resch:null,cat:null,shape:null,ext:null,channel:null,selDate:null,selTime:null,name:'',phone:'',errs:{},last:null});renderAll();window.scrollTo({top:0,behavior:'smooth'});
   }else if(t.id==='ownerLink'){
     state.view='owner';state.ownerBookings=undefined;renderAll();window.scrollTo({top:0});
-    state.ownerBookings=await loadBookings();if(state.view==='owner')renderOwner();
+    state.ownerBookings=await loadBookings();state.pendingReviews=await loadPendingReviews();if(state.view==='owner')renderOwner();
   }else if(t.id==='signUpBtn'){
     const em=$('lEmail').value.trim(),pw=$('lPw').value,msg=$('loginMsg');
     if(!em||pw.length<8){msg.textContent='Scrie emailul și o parolă de minimum 8 caractere.';return;}
@@ -813,6 +915,21 @@ document.addEventListener('submit',async e=>{
   if(e.target.id==='bookForm'){
     e.preventDefault();
     if(state.busy)return;
+    if(state.resch){
+      if(!state.selDate||!state.selTime){state.errs.form='Alege mai întâi data și ora.';renderBook();return;}
+      const sl0=timesFor(cfg).find(x=>x.t===state.selTime);
+      if(!sl0||slotStatus(state.selDate,sl0)!=='free'){state.errs.form='Intervalul ales nu mai este disponibil. Alege altă oră.';state.selTime=null;renderBook();return;}
+      state.busy=true;partialUpdate();
+      const m=state.resch;
+      try{
+        await sb('/rest/v1/rpc/reschedule_my_booking',{method:'POST',body:{p_id:m.id,p_token:m.token,p_date:state.selDate,p_start:sl0.s}});
+        const nb=Object.assign({},m,{date:state.selDate,time:state.selTime,s:sl0.s,e:sl0.e});
+        setMine(nb);await refresh();state.busy=false;state.last=nb;state.resch=null;state.view='done';renderAll();window.scrollTo({top:0,behavior:'smooth'});
+      }catch(er){
+        await refresh();state.busy=false;state.errs.form='Intervalul ales nu mai este disponibil. Alege altă oră, calendarul s-a actualizat.';state.selTime=null;renderBook();
+      }
+      return;
+    }
     state.errs={};
     const name=state.name.trim().replace(/\s+/g,' ');
     const phone=state.phone.replace(/[\s().-]/g,'');
@@ -831,11 +948,19 @@ document.addEventListener('submit',async e=>{
     const b={id:'',date:state.selDate,time:state.selTime,s:sl.s,e:sl.e,name:name,phone:state.phone.trim(),channel:state.channel,cat:cc.id,catName:cc.name,shape:ss.id,shapeName:ss.name,ext:xx?xx.id:null,extName:xx?xx.name:null,price:price};
     const r=await tryBook(b);
     state.busy=false;
-    if(r.ok){state.last=b;state.view='done';renderAll();window.scrollTo({top:0,behavior:'smooth'});}
+    if(r.ok){state.last=b;setMine(b);state.view='done';renderAll();window.scrollTo({top:0,behavior:'smooth'});}
     else{
       state.errs.form=(r.reason==='taken'||r.reason==='unavailable')?'Intervalul ales nu mai este disponibil. Alege altă oră, calendarul s-a actualizat.':'Nu am putut salva programarea. Încearcă din nou.';
       state.selTime=null;renderBook();
     }
+  }
+  if(e.target.id==='revForm'){
+    e.preventDefault();
+    const msg=$('rvMsg');msg.textContent='Se trimite…';
+    try{await sb('/rest/v1/rpc/add_review',{method:'POST',body:{p_name:$('rvName').value,p_rating:Number($('rvRating').value),p_body:$('rvBody').value}});
+      $('rvName').value='';$('rvBody').value='';msg.textContent='Mulțumim! Recenzia apare după ce este aprobată.';}
+    catch(er){msg.textContent='Completează numele și un mesaj de cel puțin 5 caractere.';}
+    return;
   }
   if(e.target.id==='loginForm'){
     e.preventDefault();
