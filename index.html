@@ -311,6 +311,7 @@ h1,h2,h3{margin:0;font-family:var(--display);font-weight:600;text-wrap:balance;l
 .socials{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 .socials a{display:inline-flex;gap:8px;align-items:center;padding:10px 16px;border-radius:999px;border:1px solid var(--line);text-decoration:none;color:var(--ink);font-weight:600;background:var(--surface)}
 .rv{margin-top:12px;padding:14px 16px;border:1px solid var(--line);border-radius:14px}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -337,7 +338,7 @@ h1,h2,h3{margin:0;font-family:var(--display);font-weight:600;text-wrap:balance;l
   <div id="view"></div>
   <div id="site"></div>
 
-  <div class="foot"><button type="button" id="ownerLink">Zona salonului</button></div>
+  <div class="foot"><button type="button" id="ownerLink" hidden>Zona salonului</button></div>
 </main>
 
 <button class="fab" id="fab" type="button" aria-label="Deschide asistentul">
@@ -1059,7 +1060,9 @@ async function ask(text){
 
 /* ---------- boot ---------- */
 renderAll();
-initStore();
+function openOwnerFromHash(){if(location.hash==='#salon'){const b=$('ownerLink');if(b)b.click();}}
+window.addEventListener('hashchange',openOwnerFromHash);
+initStore().then(openOwnerFromHash);
 setInterval(()=>{ if(state.view==='book'&&!state.busy)refresh(); },20000);
 })();
 </script>
