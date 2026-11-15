@@ -661,7 +661,8 @@ function notifText(b){
 const SB_URL='https://xdiosexqmrozqeegkhgf.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkaW9zZXhxbXJvenFlZWdraGdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ2NTc4NDUsImV4cCI6MjExMDIzMzg0NX0.FtoOq_AAdtawkFjt7KtwOe7yIXBaUDG1sExi1MYqGxY'; /* public anon key: safe in the browser, all access is limited by database rules */
 let authToken=null,authEmail=null;
-try{authToken=sessionStorage.getItem('nba_t');authEmail=sessionStorage.getItem('nba_e');}catch(e){}
+let authRefresh=null;
+try{authToken=localStorage.getItem('nba_t');authEmail=localStorage.getItem('nba_e');authRefresh=localStorage.getItem('nba_r');}catch(e){}
 let loadError=false;
 async function sb(path,o){
   o=o||{};
@@ -753,15 +754,25 @@ async function tryBook(b){
 /* owner area: Supabase Auth (email + password); only addresses listed in the owners table can read bookings */
 async function ownerSignIn(email,pw){
   const r=await sb('/auth/v1/token?grant_type=password',{method:'POST',body:{email:email,password:pw}});
-  authToken=r.access_token;authEmail=email;
-  try{sessionStorage.setItem('nba_t',authToken);sessionStorage.setItem('nba_e',email);}catch(e){}
+  authToken=r.access_token;authEmail=email;authRefresh=r.refresh_token||null;saveAuth();
 }
+function saveAuth(){try{localStorage.setItem('nba_t',authToken||'');localStorage.setItem('nba_e',authEmail||'');localStorage.setItem('nba_r',authRefresh||'');}catch(e){}}
+let refreshing=null;
+function refreshAuth(){
+  if(!authRefresh)return Promise.resolve(false);
+  if(!refreshing)refreshing=sb('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:{refresh_token:authRefresh}})
+    .then(r=>{authToken=r.access_token;authRefresh=r.refresh_token||authRefresh;saveAuth();return true;})
+    .catch(()=>false).finally(()=>{refreshing=null;});
+  return refreshing;
+}
+setInterval(()=>{if(authRefresh)refreshAuth();},40*60*1000);
 async function ownerSignUp(email,pw){
   return sb('/auth/v1/signup',{method:'POST',body:{email:email,password:pw}});
 }
-function ownerSignOut(){authToken=null;authEmail=null;try{sessionStorage.removeItem('nba_t');sessionStorage.removeItem('nba_e');}catch(e){}}
+function ownerSignOut(){authToken=null;authEmail=null;authRefresh=null;try{localStorage.removeItem('nba_t');localStorage.removeItem('nba_e');localStorage.removeItem('nba_r');}catch(e){}}
 async function loadBookings(){
   if(!authToken)return 'login';
+  if(authRefresh)await refreshAuth();
   try{
     const ok=await sb('/rest/v1/rpc/is_owner',{method:'POST',body:{},auth:true});
     if(ok!==true)return 'denied';
