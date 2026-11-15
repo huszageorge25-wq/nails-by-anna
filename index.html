@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="icon" href="assets/logo-mark.jpg">
+<link rel="icon" href="assets/logo-mark.png">
 <style>
 /* Layout idea: calendar and time slots side by side on the left, sticky selection + address column on the right; one-column on phones.
    Placeholder palette only (orchid mist, aubergine ink, mulberry accent). The brand logo colours are NOT used yet. */
@@ -358,36 +358,134 @@ body{background:radial-gradient(900px 420px at 50% -80px,rgba(217,194,169,.09),t
 .hero-logo{border-radius:28px;overflow:hidden;border:1px solid var(--accent);box-shadow:0 30px 60px -30px rgba(217,194,169,.35);line-height:0}
 .hero-logo img{width:100%;height:auto;display:block}
 @media(max-width:860px){.hero-grid{grid-template-columns:1fr;gap:26px}.hero-logo{order:-1;max-width:420px}}
+
+/* ===== sections + scroll layer ===== */
+html{scroll-behavior:smooth}
+.nav{position:sticky;top:0;z-index:25;background:rgba(10,10,11,.78);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.nav-in{display:flex;align-items:center;gap:22px;padding-top:12px;padding-bottom:12px}
+.brand{display:flex;flex-direction:row;align-items:center;gap:12px;text-decoration:none;color:var(--ink);min-width:0}
+.brand-mark{width:40px;height:56px;object-fit:contain;border:0;border-radius:0}
+.brand .bt{min-width:0}
+.brand .bt b{font-family:var(--display);font-size:24px;font-weight:600;letter-spacing:.05em;white-space:nowrap}
+.brand .bt span{display:block;margin-top:5px;font-family:var(--display);font-style:italic;font-size:13px;letter-spacing:.03em;text-transform:none;color:var(--accent);font-weight:500;line-height:1.2}
+.links{display:flex;gap:4px;margin-left:auto}
+.links a{padding:10px 14px;border-radius:999px;text-decoration:none;color:var(--muted);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;transition:color .2s,background .2s}
+.links a:hover{color:var(--ink)}
+.links a.on{color:var(--accent-ink);background:var(--accent)}
+.nav-cta{padding:11px 20px;border-radius:999px;border:1px solid var(--accent);color:var(--accent);text-decoration:none;font-weight:700;font-size:13px;letter-spacing:.06em;white-space:nowrap;transition:background .2s,color .2s}
+.nav-cta:hover{background:var(--accent);color:var(--accent-ink)}
+@media(max-width:980px){
+  .nav-in{flex-wrap:wrap;gap:8px 12px;padding-top:10px;padding-bottom:0}
+  .nav-cta{margin-left:auto;padding:9px 14px;font-size:12px}
+  .links{order:3;width:calc(100% + 40px);margin:0 -20px;padding:0 16px 8px;overflow-x:auto;scrollbar-width:none}
+  .links::-webkit-scrollbar{display:none}
+  .links a{padding:9px 12px;font-size:12px}
+  .brand .bt b{font-size:20px}.brand .bt span{font-size:11.5px}
+  .brand-mark{width:32px;height:45px}
+}
+@media(max-width:420px){.brand .bt span{max-width:190px}}
+.landing{min-height:calc(100svh - 80px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 0 0;gap:0}
+.landing-logo{width:min(560px,86%);height:auto;filter:drop-shadow(0 20px 50px rgba(217,194,169,.14))}
+.landing h1{font-size:clamp(46px,8vw,92px);font-weight:500;letter-spacing:.06em;margin-top:18px;line-height:1}
+.landing .tagline{font-family:var(--display);font-style:italic;font-size:clamp(18px,2.4vw,24px);color:var(--accent);margin:14px 0 0;letter-spacing:.03em}
+.landing-cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:30px 0 22px}
+.btn1.big,.btn2.big{padding:16px 30px;font-size:15px;letter-spacing:.06em;text-decoration:none;display:inline-flex;align-items:center}
+.btn2.big{border:1px solid var(--line);border-radius:999px;color:var(--ink)}
+.btn2.big:hover{border-color:var(--accent)}
+.marquee{width:100vw;overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:44px;padding:16px 0}
+.mq{display:flex;gap:56px;width:max-content;animation:mq 38s linear infinite}
+.mq span{font-family:var(--display);font-style:italic;font-size:20px;color:var(--muted);white-space:nowrap}
+.mq span::after{content:"✦";margin-left:56px;color:var(--gold);font-style:normal;font-size:12px;vertical-align:middle}
+@keyframes mq{to{transform:translateX(-50%)}}
+.blk,#site>section,#siteTop>section{padding:96px 0 0;margin:0!important;scroll-margin-top:76px}
+@media(max-width:980px){.blk,#site>section,#siteTop>section{padding-top:68px;scroll-margin-top:112px}}
+.sh{display:flex;gap:22px;align-items:flex-start;padding-bottom:26px;margin-bottom:30px;border-bottom:1px solid var(--line)}
+.sh .num{font-family:var(--display);font-size:clamp(44px,6vw,72px);line-height:.9;color:transparent;-webkit-text-stroke:1px var(--gold);font-weight:500}
+.sh h2.sec,#site h2.sec{font-size:clamp(34px,5vw,58px);font-weight:500;line-height:1.05;margin:0}
+.sh h2 em{font-style:italic;color:var(--accent)}
+.sh .lead{color:var(--muted);margin:12px 0 0;max-width:56ch}
+.kick{font-size:12px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+#programari .steps{margin-bottom:22px}
+#site{margin-top:0;padding-top:0;border-top:0}
+.sub2{font-family:var(--display);font-size:28px;font-weight:500;margin:44px 0 16px}
+.menu{border-top:1px solid var(--line)}
+.menu .row2{display:flex;align-items:baseline;gap:14px;padding:20px 0;border-bottom:1px solid var(--line)}
+.menu .row2 b{font-family:var(--display);font-size:26px;font-weight:500}
+.menu .row2 small{color:var(--muted);font-size:13px}
+.menu .row2 i{flex:1;border-bottom:1px dotted #3a342e;transform:translateY(-6px)}
+.menu .row2 span{font-family:var(--display);font-size:26px;color:var(--accent);white-space:nowrap}
+.tags{display:flex;flex-wrap:wrap;gap:10px}
+.tags span{padding:11px 18px;border:1px solid var(--line);border-radius:999px;font-size:14px;font-weight:600;display:inline-flex;gap:8px;align-items:center}
+.tags span svg{color:var(--accent)}
+.two2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:44px}
+@media(max-width:760px){.two2{grid-template-columns:1fr}}
+.story p{font-size:18px;line-height:1.7;color:#CFC6BC;max-width:54ch}
+.story .q{font-family:var(--display);font-style:italic;font-size:clamp(24px,3vw,32px);color:var(--accent);line-height:1.3;margin:26px 0 0;padding-left:18px;border-left:1px solid var(--gold)}
+.ftr{margin-top:110px;padding:44px 0 36px;border-top:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.ftr img{width:60px;height:84px;object-fit:contain}
+.ftr b{font-family:var(--display);font-size:28px;font-weight:500;letter-spacing:.06em}
+.ftr span{font-family:var(--display);font-style:italic;color:var(--accent)}
+.ftr a{color:var(--muted);font-size:14px;margin-top:10px}
+body.solo .landing,body.solo #siteTop,body.solo #site,body.solo #programari .sh,body.solo #programari .steps,body.solo .links,body.solo .nav-cta,body.solo .ftr{display:none}
+body.solo #programari{padding-top:34px}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}.mq{animation:none}}
+
+html,body{overflow-x:clip}
+.marquee{width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);align-self:stretch;max-width:none}
+.landing{align-items:center}
+@media(max-width:980px){.nav-cta{display:none}.nav-in{padding-top:10px}}
+.mq.paused,.marquee:hover .mq{animation-play-state:paused}
 </style>
 </head>
 <body>
 
-<header class="top">
-  <div class="wrap">
-    <a class="brand" href="./" aria-label="Nails by Anna"><img class="brand-mark" src="assets/logo-mark.jpg" alt="" width="46" height="46"><div class="bt"><b>Nails by Anna</b><span>Programări</span></div></a>
-    <a class="addr-chip" id="chipAddr" href="#" target="_blank" rel="noopener" aria-label="Deschide adresa în Google Maps">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
-      <span id="chipAddrText"></span>
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top" aria-label="Nails by Anna, început">
+      <img class="brand-mark" src="assets/logo-mark.png" alt="" width="40" height="56">
+      <div class="bt"><b>Nails by Anna</b><span>Elegance in every detail. Where beauty meets perfection.</span></div>
     </a>
+    <nav class="links" id="links" aria-label="Secțiuni">
+      <a href="#programari">Programări</a>
+      <a href="#servicii">Servicii</a>
+      <a href="#despre">Despre mine</a>
+      <a href="#recenzii">Recenzii</a>
+      <a href="#oferte">Oferte</a>
+    </nav>
+    <a class="nav-cta" href="#programari">Programează-te</a>
   </div>
 </header>
 
 <main class="wrap" id="main">
-  <section class="hero" id="hero">
-   <div class="hero-grid"><div class="hero-text">
-    <div class="motto">Elegance in every detail. Where beauty meets perfection!</div>
-    <h1>Rezervă-ți <em>manichiura</em></h1>
-    <p>Alege tipul de unghii, forma și ora care ți se potrivește. Vezi în timp real ce intervale sunt libere.</p>
-    <div class="steps" id="steps"></div>
-   </div>
-   <div class="hero-logo"><img src="assets/logo.jpg" alt="Nails by Anna, manichiură" width="1100" height="670"></div>
-   </div>
+  <span id="top"></span>
+  <section class="landing" id="hero">
+    <img class="landing-logo" src="assets/logo.png" alt="Logo Nails by Anna" width="1100" height="670">
+    <h1>Nails by Anna</h1>
+    <p class="tagline">Elegance in every detail. Where beauty meets perfection.</p>
+    <div class="landing-cta"><a class="btn1 big" href="#programari">Programează-te</a><a class="btn2 big" href="#servicii">Vezi serviciile</a></div>
+    <a class="addr-chip" id="chipAddr" href="#" target="_blank" rel="noopener" aria-label="Deschide adresa în Google Maps"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span id="chipAddrText"></span></a>
+    <div class="marquee" aria-hidden="true"><div class="mq"><span>Gel</span><span>Builder gel</span><span>Semi-gel polish</span><span>Polygel</span><span>French</span><span>Baby Boomer</span><span>Întreținere</span><span>Gel</span><span>Builder gel</span><span>Semi-gel polish</span><span>Polygel</span><span>French</span><span>Baby Boomer</span><span>Întreținere</span></div></div>
   </section>
 
-  <div id="mine"></div>
-  <div id="view"></div>
+  <div id="siteTop"></div>
+
+  <section class="blk" id="programari">
+    <header class="sh"><span class="num">01</span><div><div class="kick">Programări</div><h2 class="sec">Rezervă-ți <em>manichiura</em></h2><p class="lead">Alege tipul de unghii, forma și ora care ți se potrivește. Vezi în timp real ce intervale sunt libere.</p></div></header>
+    <div class="steps" id="steps"></div>
+    <div id="mine"></div>
+    <div id="view"></div>
+  </section>
+
   <div id="site"></div>
 
+  <footer class="ftr" id="ftr">
+    <img src="assets/logo-mark.png" alt="" width="60" height="84">
+    <b>Nails by Anna</b>
+    <span>Elegance in every detail. Where beauty meets perfection.</span>
+    <a id="ftrAddr" href="#" target="_blank" rel="noopener"></a>
+  </footer>
   <div class="foot"><button type="button" id="ownerLink" hidden>Zona salonului</button></div>
 </main>
 
@@ -675,28 +773,42 @@ const IC={
   head:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>'
 };
 function stars(n){return '★★★★★'.slice(0,n)+'☆☆☆☆☆'.slice(0,5-n);}
-let reviewsCache=null;
+let reviewsCache=null,siteHtml='';
+function sh(n,k,t){return '<header class="sh reveal"><span class="num">'+n+'</span><div><div class="kick">'+k+'</div><h2 class="sec">'+t+'</h2></div></header>';}
 function renderSite(){
-  const el=$('site');if(!el)return;
-  if(state.view!=='book'){el.innerHTML='';return;}
-  const li=t=>'<li>'+IC.ok+t+'</li>';
-  const revs=(reviewsCache||[]).map(r=>'<div class="card rev"><span class="st" aria-label="'+r.rating+' din 5">'+stars(r.rating)+'</span><b>'+esc(r.name)+'</b><p>'+esc(r.body)+'</p></div>').join('')||'<p class="sub" style="color:var(--muted)">Fii prima cliență care lasă o recenzie.</p>';
-  el.innerHTML=
-  '<section class="split"><div class="photo">'+IC.cam+'Fotografia salonului</div><div><div class="kick">Nails by Anna</div><h2 class="sec">Un loc în care detaliile contează</h2><p>Un spațiu liniștit, creat ca manichiura să fie o oră doar a ta. Fiecare formă și fiecare finisaj sunt lucrate cu grijă, răbdare și atenție la ce îți dorești tu.</p>'+
-   '<div class="socials"><a href="#" aria-label="Instagram">Instagram <span style="color:var(--muted)">...</span></a><a href="#" aria-label="Facebook">Facebook <span style="color:var(--muted)">...</span></a></div></div></section>'+
-  '<section><div class="kick">Servicii</div><h2 class="sec">Construcție</h2><div class="pgrid">'+
-    '<div class="card pcard"><h3>Unghii semi</h3><div class="bigprice">75 lei</div><p style="color:var(--muted);margin:8px 0 0">Preț standard</p></div>'+
-    '<div class="card pcard"><h3>Materiale</h3><ul>'+li('Gel')+li('Builder gel')+li('Semi-gel polish')+li('Polygel')+'</ul></div>'+
-    '<div class="card pcard"><h3>Incluse în preț</h3><ul>'+li('Simplu')+li('French')+li('Baby Boomer')+li('Întreținere')+'</ul></div></div></section>'+
-  '<section class="pgrid" style="margin-top:56px"><div class="card pcard"><div class="kick">Anulare</div><h3>Anulezi direct din aplicație</h3><p style="color:var(--muted);margin:0">Programarea ta apare în partea de sus a paginii, cu opțiunea de anulare mereu la îndemână.</p></div>'+
-   '<div class="card pcard"><div class="kick">Reprogramare</div><h3>Altă zi sau altă oră</h3><p style="color:var(--muted);margin:0">Ți s-a schimbat programul? Apeși Reprogramează și alegi o altă zi sau oră liberă.</p></div></section>'+
-  '<section><div class="kick">Recenzii</div><h2 class="sec">Recenzii de la cliente</h2>'+revs+
-   '<form class="rform" id="revForm"><input id="rvName" placeholder="Numele tău" maxlength="60" required><select id="rvRating" aria-label="Notă"><option value="5">★★★★★</option><option value="4">★★★★☆</option><option value="3">★★★☆☆</option><option value="2">★★☆☆☆</option><option value="1">★☆☆☆☆</option></select><textarea id="rvBody" rows="3" placeholder="Cum a fost experiența ta?" maxlength="600" required></textarea><button class="btn1" type="submit">Trimite recenzia</button><div class="fine" id="rvMsg" style="text-align:left"></div></form></section>'+
-  '<section class="split"><div><div class="kick">Despre mine</div><h2 class="sec">Povestea mea</h2><p>Sunt la început de drum, dar cu multă ambiție, răbdare și dorința de a învăța în fiecare zi. Pun suflet în fiecare lucrare și vreau ca fiecare clientă să plece mulțumită.</p><h3 style="margin-top:22px;font-size:24px">Ce mă diferențiază</h3><p>Îți respect dorințele, de la formă până la ultimul detaliu.</p></div><div class="photo">'+IC.cam+'Fotografia mea</div></section>'+
-  '<section><div class="vibes"><div class="card vibe">'+IC.cup+'Cafea sau ceai</div><div class="card vibe">'+IC.chat+'Povești, dacă vrei</div><div class="card vibe">'+IC.moon+'Liniște, dacă ai nevoie</div><div class="card vibe">'+IC.tv+'Serialul tău preferat</div><div class="card vibe">'+IC.head+'Muzică în căști</div></div></section>'+
-  '<section><div class="kick">Marketing și promoții</div><h2 class="sec">Oferte pentru tine</h2>'+
-   '<div class="bf"><h3>Campania Black Friday</h3><p>Pregătim oferte speciale pentru Black Friday. Rămâi aproape, le anunțăm aici.</p></div>'+
-   '<div class="card pcard" style="margin-top:14px"><h3>Cardul de fidelitate</h3><p style="color:var(--muted);margin:0">La a cincea programare primești 50% reducere.</p><div class="stamps"><div class="stamp">1</div><div class="stamp">2</div><div class="stamp">3</div><div class="stamp">4</div><div class="stamp last">−50%</div></div></div></section>';
+  const el=$('site'),top=$('siteTop');if(!el||!top)return;
+  document.body.classList.toggle('solo',state.view!=='book');
+  const fa=$('ftrAddr');if(fa){fa.href=mapsUrl();fa.textContent=cfg.address||'';}
+  const chip=t=>'<span>'+IC.ok+t+'</span>';
+  const revs=(reviewsCache||[]).map(r=>'<div class="card rev reveal"><span class="st" aria-label="'+r.rating+' din 5">'+stars(r.rating)+'</span><b>'+esc(r.name)+'</b><p>'+esc(r.body)+'</p></div>').join('')||'<p style="color:var(--muted)">Fii prima cliență care lasă o recenzie.</p>';
+  const topHtml='<section class="split" id="salon"><div class="photo reveal">'+IC.cam+'Fotografia salonului</div><div class="story reveal"><div class="kick">Salonul</div><h2 class="sec" style="font-size:clamp(32px,4.4vw,52px);font-weight:500;line-height:1.08;margin:0 0 14px">Un loc în care detaliile contează</h2><p>Un spațiu liniștit, creat ca manichiura să fie o oră doar a ta. Fiecare formă și fiecare finisaj sunt lucrate cu grijă, răbdare și atenție la ce îți dorești tu.</p>'+
+   '<div class="socials"><a href="#" aria-label="Instagram">Instagram <span style="color:var(--muted)">...</span></a><a href="#" aria-label="Facebook">Facebook <span style="color:var(--muted)">...</span></a></div></div></section>';
+  const html=
+  '<section id="servicii">'+sh('02','Servicii','Construcție')+
+    '<div class="menu reveal"><div class="row2"><div><b>Unghii semi</b><br><small>Preț standard</small></div><i></i><span>75 lei</span></div></div>'+
+    '<h3 class="sub2 reveal">Materiale</h3><div class="tags reveal">'+chip('Gel')+chip('Builder gel')+chip('Semi-gel polish')+chip('Polygel')+'</div>'+
+    '<h3 class="sub2 reveal">Incluse în preț</h3><div class="tags reveal">'+chip('Simplu')+chip('French')+chip('Baby Boomer')+chip('Întreținere')+'</div>'+
+    '<div class="two2"><div class="card pcard reveal"><div class="kick">Anulare</div><h3>Anulezi direct din aplicație</h3><p style="color:var(--muted);margin:0">Programarea ta apare în secțiunea Programări, cu opțiunea de anulare mereu la îndemână.</p></div>'+
+    '<div class="card pcard reveal"><div class="kick">Reprogramare</div><h3>Altă zi sau altă oră</h3><p style="color:var(--muted);margin:0">Ți s-a schimbat programul? Apeși Reprogramează și alegi o altă zi sau oră liberă.</p></div></div></section>'+
+  '<section id="despre">'+sh('03','Despre mine','Povestea mea')+
+    '<div class="split"><div class="story reveal"><p>Sunt la început de drum, dar cu multă ambiție, răbdare și dorința de a învăța în fiecare zi. Pun suflet în fiecare lucrare și vreau ca fiecare clientă să plece mulțumită.</p><p class="q">Îți respect dorințele, de la formă până la ultimul detaliu.</p></div><div class="photo reveal">'+IC.cam+'Fotografia mea</div></div>'+
+    '<h3 class="sub2 reveal">Ce mă diferențiază</h3><div class="vibes reveal" style="margin-top:0"><div class="card vibe">'+IC.cup+'Cafea sau ceai</div><div class="card vibe">'+IC.chat+'Povești, dacă vrei</div><div class="card vibe">'+IC.moon+'Liniște, dacă ai nevoie</div><div class="card vibe">'+IC.tv+'Serialul tău preferat</div><div class="card vibe">'+IC.head+'Muzică în căști</div></div></section>'+
+  '<section id="recenzii">'+sh('04','Recenzii','Recenzii de la cliente')+revs+
+   '<form class="rform reveal" id="revForm"><input id="rvName" placeholder="Numele tău" maxlength="60" required><select id="rvRating" aria-label="Notă"><option value="5">★★★★★</option><option value="4">★★★★☆</option><option value="3">★★★☆☆</option><option value="2">★★☆☆☆</option><option value="1">★☆☆☆☆</option></select><textarea id="rvBody" rows="3" placeholder="Cum a fost experiența ta?" maxlength="600" required></textarea><button class="btn1" type="submit">Trimite recenzia</button><div class="fine" id="rvMsg" style="text-align:left"></div></form></section>'+
+  '<section id="oferte">'+sh('05','Marketing și promoții','Oferte pentru tine')+
+   '<div class="bf reveal"><h3>Campania Black Friday</h3><p>Pregătim oferte speciale pentru Black Friday. Rămâi aproape, le anunțăm aici.</p></div>'+
+   '<div class="card pcard reveal" style="margin-top:16px"><h3>Cardul de fidelitate</h3><p style="color:var(--muted);margin:0">La a cincea programare primești 50% reducere.</p><div class="stamps"><div class="stamp">1</div><div class="stamp">2</div><div class="stamp">3</div><div class="stamp">4</div><div class="stamp last">−50%</div></div></div></section>';
+  if(html!==siteHtml){siteHtml=html;top.innerHTML=topHtml;el.innerHTML=html;watchReveal();}
+}
+let revealIO=null,navIO=null;
+function watchReveal(){
+  const els=document.querySelectorAll('.reveal:not(.in)');
+  if(!('IntersectionObserver' in window)){els.forEach(e=>e.classList.add('in'));return;}
+  if(!revealIO)revealIO=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');revealIO.unobserve(e.target);}}),{rootMargin:'0px 0px -8% 0px',threshold:.08});
+  els.forEach(e=>revealIO.observe(e));
+  if(navIO)navIO.disconnect();
+  navIO=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){document.querySelectorAll('#links a').forEach(a=>{const on=a.getAttribute('href')==='#'+e.target.id;a.classList.toggle('on',on);if(on)a.setAttribute('aria-current','true');else a.removeAttribute('aria-current');if(on&&a.scrollIntoView&&window.innerWidth<981){const l=$('links');l.scrollTo({left:a.offsetLeft-l.clientWidth/2+a.clientWidth/2,behavior:'smooth'});}});}}),{rootMargin:'-40% 0px -55% 0px'});
+  ['programari','servicii','despre','recenzii','oferte'].forEach(id=>{const x=$(id);if(x)navIO.observe(x);});
 }
 function svcComplete(){return priceFor(state.cat,state.shape,state.ext)!==null;}
 function renderSteps(){
@@ -907,7 +1019,7 @@ document.addEventListener('click',async e=>{
   }else if(t.id==='reschBtn'){
     const m=getMine();if(!m)return;
     Object.assign(state,{resch:m,view:'book',cat:m.cat,shape:m.shape,ext:m.ext,channel:m.channel,name:m.name,phone:m.phone,selDate:null,selTime:null,errs:{}});
-    renderAll();window.scrollTo({top:0,behavior:'smooth'});
+    renderAll();$('programari').scrollIntoView();
   }else if(t.id==='reschCancel'){
     Object.assign(state,{resch:null,cat:null,shape:null,ext:null,channel:null,name:'',phone:'',selDate:null,selTime:null,errs:{}});renderAll();
   }else if(t.id==='cancelMine'){
@@ -919,7 +1031,7 @@ document.addEventListener('click',async e=>{
   }else if(t.dataset.approve){
     try{await sb('/rest/v1/reviews?id=eq.'+encodeURIComponent(t.dataset.approve),{method:'PATCH',auth:true,body:{approved:true}});state.pendingReviews=await loadPendingReviews();reviewsCache=await loadReviews();renderOwner();toast('Recenzia este publicată.');}catch(er){toast('Nu s-a putut publica.');}
   }else if(t.id==='again'){
-    Object.assign(state,{view:'book',resch:null,cat:null,shape:null,ext:null,channel:null,selDate:null,selTime:null,name:'',phone:'',errs:{},last:null});renderAll();window.scrollTo({top:0,behavior:'smooth'});
+    Object.assign(state,{view:'book',resch:null,cat:null,shape:null,ext:null,channel:null,selDate:null,selTime:null,name:'',phone:'',errs:{},last:null});renderAll();$('programari').scrollIntoView();
   }else if(t.id==='ownerLink'){
     state.view='owner';state.ownerBookings=undefined;renderAll();window.scrollTo({top:0});
     state.ownerBookings=await loadBookings();state.pendingReviews=await loadPendingReviews();if(state.view==='owner')renderOwner();
@@ -1112,6 +1224,7 @@ async function ask(text){
 renderAll();
 function openOwnerFromHash(){if(location.hash==='#salon'){const b=$('ownerLink');if(b)b.click();}}
 window.addEventListener('hashchange',openOwnerFromHash);
+document.addEventListener('click',e=>{const m=e.target.closest('.marquee');if(m)m.firstElementChild.classList.toggle('paused');});
 initStore().then(openOwnerFromHash);
 setInterval(()=>{ if(state.view==='book'&&!state.busy)refresh(); },20000);
 })();
